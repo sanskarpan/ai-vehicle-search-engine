@@ -51,7 +51,7 @@ Exit evidence: fixture-driven POST search, listing detail and exact counts pass;
 - [x] Add structured-output provider adapters for OpenRouter (with configurable free-model fallback chain) and direct Gemini.
 - [x] Verify provider HTTP schema support, original-schema validation and provider termination checks in adapter code.
 - [x] Apply bounded provider deadline and output; OpenRouter/Gemini direct HTTP clients do not retry.
-- [x] Add failure mapping; optional transient fallback is off by default and clearly labelled when enabled.
+- [x] Add failure mapping; optional timeout/availability/invalid-output fallback is off by default and clearly labelled when enabled.
 - [x] Add mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
 
 Exit evidence: offline path and SDK contract tests pass; real adapter exists and is reachable from LLM mode. If no key is available, mark live checks pending and continue all independent work.

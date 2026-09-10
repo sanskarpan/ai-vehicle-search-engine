@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from vehicle_search.api import create_app
+from vehicle_search.parsing import ParserError
 from vehicle_search.seed import build
 from vehicle_search.storage import connect, insert_vehicle
 
@@ -69,3 +70,13 @@ def test_offset_beyond_results_returns_empty_page(tmp_path, monkeypatch):
 def test_budget_shorthand_is_not_partially_matched(tmp_path, monkeypatch):
     body=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'SUVs under ₹1k'}).json()
     assert body['status']=='needs_clarification'
+
+def test_invalid_provider_output_can_use_explicit_degraded_fallback(tmp_path, monkeypatch):
+    monkeypatch.setenv('PARSER_MODE','llm'); monkeypatch.setenv('LLM_PROVIDER','openrouter')
+    monkeypatch.setenv('LLM_MODEL','openrouter/free'); monkeypatch.setenv('OPENROUTER_API_KEY','test-key')
+    monkeypatch.setenv('ALLOW_OFFLINE_FALLBACK','true')
+    class BrokenParser:
+        def parse(self, query): raise ParserError('llm_invalid_response','bad structured output')
+    monkeypatch.setattr('vehicle_search.api.build_parser', lambda *args, **kwargs: BrokenParser())
+    body=TestClient(create_app(str(fixture_db(tmp_path)))).post('/api/v1/search',json={'query':'Show SUVs'}).json()
+    assert body['status']=='ok' and body['degraded'] is True and body['parser_mode']=='offline'

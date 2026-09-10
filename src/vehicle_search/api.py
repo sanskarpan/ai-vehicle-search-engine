@@ -73,7 +73,7 @@ def create_app(db_path: str|None=None):
                 if parser is None: raise ParserError("llm_configuration_error",f"LLM mode requires LLM_MODEL and {provider.upper()} credentials")
                 try: intent=parser.parse(body.query)
                 except ParserError as error:
-                    if allow_fallback and error.code in {"llm_timeout","llm_unavailable"}:
+                    if allow_fallback and error.code in {"llm_timeout","llm_unavailable","llm_invalid_response"}:
                         intent=offline_parse(body.query); degraded=True
                     else: raise
             else:
