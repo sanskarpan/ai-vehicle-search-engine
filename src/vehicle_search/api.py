@@ -27,6 +27,12 @@ class SearchRequest(BaseModel):
     def trim(cls,v):
         if not v.strip(): raise ValueError("query must not be empty")
         return v.strip()
+    @field_validator("sort")
+    @classmethod
+    def validate_sort(cls,v):
+        if v is not None and v not in {"price_asc","price_desc","odometer_asc","year_desc"}:
+            raise ValueError("sort must be price_asc, price_desc, odometer_asc or year_desc")
+        return v
 
 def create_app(db_path: str|None=None):
     app=FastAPI(title="AI Vehicle Search Engine",version="0.1.0",description="Natural-language search over a synthetic catalogue")

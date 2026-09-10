@@ -39,6 +39,7 @@ def test_pagination(tmp_path, monkeypatch):
 
 def test_validation_rejects_extra_and_empty(tmp_path, monkeypatch):
     c=client(tmp_path,monkeypatch); assert c.post('/api/v1/search',json={'query':' ','x':1}).status_code==422
+    assert c.post('/api/v1/search',json={'query':'Show cars','sort':'random'}).status_code==422
 
 def test_frontend_is_served(tmp_path, monkeypatch):
     response=client(tmp_path, monkeypatch).get('/')
