@@ -66,7 +66,7 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 - [x] Run deterministic evaluator and save a truthful summary (36/36 golden, 24/24 held-out offline status checks).
 - [x] Run opt-in provider checks with supplied credentials; record actual responses and failures below.
 - [ ] Meet live gates or document exact remaining cases; never count offline success as live evidence.
-- [ ] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
+- [x] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
 - [ ] Measure live latency separately when available; report any misses rather than fabricating targets.
 
 Exit evidence: deterministic gates green, zero measured hard-filter violations; live/performance gate status explicitly recorded.
@@ -105,7 +105,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Offline grammar | Complete | 24/24 held-out status checks |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
 | Live AI evaluation | Blocked by provider account state | OpenRouter free route returned malformed/empty extraction; Gemini key returned HTTP 429 quota limit |
-| Performance | Not measured | 10k-row benchmark and query-plan capture remain |
+| Performance | Measured | Python 3.12 / SQLite, 10,000 rows, 30 offline searches: p50 3.16 ms, p95 3.72 ms, max 3.92 ms; representative plan uses the vehicle primary-key index for stable ordering |
 | Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
 | Public submission | Owner action pending | No repository published by this plan |
 
