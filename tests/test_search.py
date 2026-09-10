@@ -41,7 +41,10 @@ def test_validation_rejects_extra_and_empty(tmp_path, monkeypatch):
     c=client(tmp_path,monkeypatch); assert c.post('/api/v1/search',json={'query':' ','x':1}).status_code==422
 
 def test_frontend_is_served(tmp_path, monkeypatch):
-    assert client(tmp_path, monkeypatch).get('/').status_code == 200
+    response=client(tmp_path, monkeypatch).get('/')
+    assert response.status_code == 200
+    assert 'aria-label="Vehicle search query"' in response.text
+    assert 'role="status"' in response.text
 
 def test_detail_and_missing_detail_are_stable(tmp_path, monkeypatch):
     c=client(tmp_path,monkeypatch)

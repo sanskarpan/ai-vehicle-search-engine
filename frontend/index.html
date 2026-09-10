@@ -3,27 +3,27 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Autofinder — AI vehicle search</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css?v=2">
 </head>
 <body>
   <div class="shell">
     <header class="topbar"><a class="brand" href="/"><span class="brand-mark">A</span><span>autofinder<span class="dot">.</span></span></a><div class="top-actions"><span id="providerBadge" class="badge muted">OFFLINE DEMO</span><span id="health" class="health"><i></i> checking service</span></div></header>
     <main>
       <section class="hero"><div class="eyebrow">INTELLIGENT VEHICLE CATALOGUE</div><h1>Find the car that<br><em>fits your life.</em></h1><p>Describe what you need in plain language. Autofinder translates your brief into precise catalogue filters.</p>
-        <form id="searchForm" class="search-box"><span class="search-icon">⌕</span><input id="query" maxlength="500" autocomplete="off" placeholder="Try “SUVs under ₹15L with high safety ratings”"><button type="submit">Search <span>↗</span></button></form>
+        <form id="searchForm" class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="query" aria-label="Vehicle search query" maxlength="500" autocomplete="off" placeholder="Try “SUVs under ₹15L with high safety ratings”"><button type="submit">Search <span aria-hidden="true">↗</span></button></form>
         <div class="examples"><span>Try:</span><button data-query="Show SUVs under ₹15L">SUVs under ₹15L</button><button data-query="Diesel automatic cars below 80k km">Diesel automatic</button><button data-query="Family cars with high safety ratings">Family + safe</button></div>
       </section>
       <section class="workspace">
         <aside class="sidebar"><div class="side-heading"><span>SEARCH CONTROLS</span><button id="reset" class="text-button">Reset</button></div><label>Sort results<select id="sort"><option value="">Relevance</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="odometer_asc">Lowest odometer</option><option value="year_desc">Newest first</option></select></label><div class="side-note"><span class="spark">✦</span><div><strong>AI interpretation</strong><p>Every result is checked against the filters extracted from your request.</p></div></div><div class="legend"><span class="legend-dot"></span> Synthetic catalogue<br><span class="legend-dot green"></span> Ratings are demo data</div></aside>
         <div class="results-pane"><div class="results-head"><div><span class="eyebrow">MATCHES</span><h2 id="resultTitle">Ready when you are</h2></div><div class="result-tools"><button id="interpretBtn" class="outline-button" hidden>View interpretation</button><button id="rawBtn" class="icon-button" title="Show raw response" hidden>{ }</button></div></div>
-          <div id="notice" class="notice" hidden></div><div id="interpretation" class="interpretation" hidden></div><div id="results" class="results-grid"><div class="empty-state"><div class="empty-orbit">✦</div><h3>Search the catalogue</h3><p>Use one of the example briefs above or describe your ideal vehicle.</p></div></div>
+          <div id="notice" class="notice" role="status" aria-live="polite" hidden></div><div id="interpretation" class="interpretation" hidden></div><div id="results" class="results-grid"><div class="empty-state"><div class="empty-orbit">✦</div><h3>Search the catalogue</h3><p>Use one of the example briefs above or describe your ideal vehicle.</p></div></div>
           <div class="pager" id="pager" hidden><button id="prev">←</button><span id="pageLabel"></span><button id="next">→</button></div>
         </div>
       </section>
     </main>
     <footer><span>autofinder / AI vehicle search</span><span id="version">synthetic demo · v1</span></footer>
   </div>
-  <dialog id="detailDialog"><button class="dialog-close" onclick="detailDialog.close()">×</button><div id="detailContent"></div></dialog>
-  <script src="/static/app.js"></script>
+  <dialog id="detailDialog" aria-labelledby="detailContent"><button class="dialog-close" aria-label="Close details" onclick="detailDialog.close()">×</button><div id="detailContent"></div></dialog>
+  <script src="/static/app.js?v=2"></script>
 </body>
 </html>
