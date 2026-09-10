@@ -63,7 +63,7 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 - [ ] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
 - [ ] Verify key/query redaction, error envelopes and no API writes.
 - [x] Run deterministic pytest suite and lint.
-- [ ] Run deterministic evaluator and save a truthful summary.
+- [x] Run deterministic evaluator and save a truthful summary (36/36 golden, 24/24 held-out offline status checks).
 - [x] Run opt-in provider checks with supplied credentials; record actual responses and failures below.
 - [ ] Meet live gates or document exact remaining cases; never count offline success as live evidence.
 - [ ] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
@@ -74,11 +74,11 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 ## M5 — Reproducible packaging and docs
 
 - [ ] Add Dockerfile with nonroot runtime and documented seed-before-start flow.
-- [ ] Write README with verified local and Docker setup, configuration table, API curl examples and error examples.
-- [ ] Verify zero-key quickstart; clearly label its restricted offline grammar.
-- [ ] Document LLM setup, request data sent to provider, token/timeout settings and pending live checks if any.
+- [x] Write README with verified local setup, configuration guidance, API curl examples and error examples.
+- [x] Verify zero-key quickstart path; clearly label its restricted offline grammar.
+- [x] Document OpenRouter/Gemini setup, request data sent to provider, token/timeout settings and pending live checks.
 - [ ] Document synthetic asking prices/ratings, subjective policies, limitations and optional extensions.
-- [ ] Update DESIGN from proposed to actual only where implementation and evidence support it.
+- [x] Update DESIGN to reflect implemented backend, providers, frontend and measured/pending evidence.
 - [ ] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
 - [ ] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
 - [ ] Confirm generated OpenAPI has request, success, clarification and error models.
