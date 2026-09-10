@@ -106,6 +106,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
 | Live AI evaluation | Blocked by provider account state | 2026-09-10 run through OpenRouter `openrouter/free` and three configured free fallbacks returned only unavailable/invalid responses (HTTP 422 envelope, no fabricated result); Gemini `gemini-3.8-flash` returned HTTP 429 quota limit 0 |
 | Frontend browser E2E | Complete | Local browser verified example search, interpretation panel, sort, next-page pagination, keyboard-open vehicle detail dialog and responsive mobile card layout |
+| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serving commit `84eb055`; health, frontend, search, clarification and detail smoke checks pass |
 | Performance | Measured | Python 3.12 / SQLite, 10,000 rows, 30 offline searches: p50 3.16 ms, p95 3.72 ms, max 3.92 ms; representative plan uses the vehicle primary-key index for stable ordering |
 | Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
 | Public submission | Owner action pending | No repository published by this plan |
