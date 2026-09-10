@@ -48,8 +48,18 @@ def expand_policies(intent: Intent) -> Intent:
 
 def validate_intent(intent: Intent) -> Intent:
     for p in intent.predicates:
+        if not isinstance(p.values, list) or not p.values:
+            intent.issues.append({"code":"unverifiable","evidence":p.evidence or p.field}); continue
         if p.field not in FIELDS or p.op not in {"eq","lt","lte","gt","gte","in","not_in","contains_all"}:
             intent.issues.append({"code":"unsupported","evidence":p.evidence or p.field}); continue
+        if p.field == "features" and p.op != "contains_all":
+            intent.issues.append({"code":"unsupported","evidence":p.evidence or "feature operator"}); continue
+        if p.field != "features" and p.op == "contains_all":
+            intent.issues.append({"code":"unsupported","evidence":p.evidence or "contains_all"}); continue
+        if p.field in NUMERIC_FIELDS and p.op in {"in", "not_in"}:
+            intent.issues.append({"code":"unsupported","evidence":p.evidence or "numeric set operator"}); continue
+        if p.op not in {"in", "not_in", "contains_all"} and len(p.values) != 1:
+            intent.issues.append({"code":"unverifiable","evidence":p.evidence or p.field}); continue
         if p.field in NUMERIC_FIELDS:
             try: p.values = [int(v) for v in p.values]
             except (TypeError, ValueError): intent.issues.append({"code":"unverifiable","evidence":p.evidence})

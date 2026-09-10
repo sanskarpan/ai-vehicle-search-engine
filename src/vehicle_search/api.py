@@ -76,6 +76,7 @@ def create_app(db_path: str|None=None):
             result.update({"request_id":rid,"query":body.query,"parser_mode":"offline" if degraded else mode,"provider":None if degraded or mode=="offline" else provider,"degraded":degraded,"catalogue_version":catalogue_version(path),"timings_ms":{"total":round((time.perf_counter()-started)*1000,2)},"warnings":["Synthetic catalogue; safety ratings are demonstration data."]+(["Offline fallback used after transient provider failure."] if degraded else [])})
             return result
         except ParserError as e: raise HTTPException(422,detail={"request_id":rid,"error":{"code":e.code,"message":e.message,"retryable":False}})
+        except (TypeError, ValueError) as e: raise HTTPException(422,detail={"request_id":rid,"error":{"code":"invalid_intent","message":str(e) or "unsupported search criteria","retryable":False}})
         except FileNotFoundError: raise HTTPException(503,detail={"request_id":rid,"error":{"code":"catalogue_unavailable","message":"catalogue is not seeded","retryable":False}})
     @app.get("/api/v1/vehicles/{vehicle_id}")
     async def vehicle_route(vehicle_id: str):

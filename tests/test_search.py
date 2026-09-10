@@ -42,3 +42,20 @@ def test_validation_rejects_extra_and_empty(tmp_path, monkeypatch):
 
 def test_frontend_is_served(tmp_path, monkeypatch):
     assert client(tmp_path, monkeypatch).get('/').status_code == 200
+
+def test_detail_and_missing_detail_are_stable(tmp_path, monkeypatch):
+    c=client(tmp_path,monkeypatch)
+    assert c.get('/api/v1/vehicles/veh_000001').status_code == 200
+    missing=c.get('/api/v1/vehicles/does-not-exist')
+    assert missing.status_code==404 and missing.json()['error']['code']=='not_found'
+
+def test_large_request_and_unseeded_readiness(tmp_path, monkeypatch):
+    c=client(tmp_path,monkeypatch)
+    assert c.post('/api/v1/search',content='{"query":"x"}',headers={'content-type':'application/json','content-length':'9000'}).status_code == 413
+    unseeded=tmp_path/'missing.db'
+    assert TestClient(create_app(str(unseeded))).get('/health/ready').status_code == 503
+
+def test_offset_beyond_results_returns_empty_page(tmp_path, monkeypatch):
+    response=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'Show cars','offset':10000})
+    body=response.json()
+    assert response.status_code==200 and body['total']==8 and body['results']==[] and body['has_more'] is False

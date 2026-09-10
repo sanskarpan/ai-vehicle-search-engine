@@ -91,6 +91,10 @@ def parse_provider_json(raw: str, query: str) -> Intent:
     i=Intent(intent=obj.get("intent","search"), parser_mode="llm")
     for p in obj.get("predicates",[]):
         if not isinstance(p,dict) or not {"field","op","values","evidence"}<=set(p): raise ParserError("llm_invalid_response","invalid predicate")
+        if not isinstance(p["values"], list) or not p["values"] or not all(isinstance(v, str) for v in p["values"]):
+            raise ParserError("llm_invalid_response","invalid predicate values")
+        if not isinstance(p["evidence"], str) or not isinstance(p["field"], str) or not isinstance(p["op"], str):
+            raise ParserError("llm_invalid_response","invalid predicate fields")
         if p["evidence"] not in query: raise ParserError("llm_invalid_response","predicate evidence is not in query")
         i.predicates.append(Predicate(p["field"],p["op"],p["values"],"explicit",p["evidence"]))
     i.preferences=[Preference(x["code"],x.get("evidence","")) for x in obj.get("preferences",[])]
