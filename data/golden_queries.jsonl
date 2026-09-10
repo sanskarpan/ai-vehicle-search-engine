@@ -1,0 +1,36 @@
+{"id":"E01","query":"Show SUVs under ₹15L","expected_status":"ok"}
+{"id":"E02","query":"Diesel automatic cars below 80k km","expected_status":"ok"}
+{"id":"E03","query":"Family cars with high safety ratings","expected_status":"ok"}
+{"id":"E04","query":"SUVs up to ₹15L","expected_status":"ok"}
+{"id":"E05","query":"SUVs below 15 lakh","expected_status":"ok"}
+{"id":"E06","query":"SUVs under INR 15,00,000","expected_status":"ok"}
+{"id":"E07","query":"Cars below 0.15 crore","expected_status":"ok"}
+{"id":"E08","query":"Diesel automatic cars up to 80,000 km","expected_status":"ok"}
+{"id":"E09","query":"Cars between 10 lakh and 15 lakh","expected_status":"ok"}
+{"id":"E10","query":"SUVs not diesel under ₹15L","expected_status":"ok"}
+{"id":"E11","query":"Petrol or diesel cars under 10L","expected_status":"ok"}
+{"id":"E12","query":"SUVs or cars under 10L","expected_status":"needs_clarification"}
+{"id":"E13","query":"Cars under 10L above 15L","expected_status":"needs_clarification"}
+{"id":"E14","query":"SUVs under ₹1L","expected_status":"ok"}
+{"id":"E15","query":"Family of 6 with high safety ratings","expected_status":"ok"}
+{"id":"E16","query":"Family cars","expected_status":"ok"}
+{"id":"E17","query":"Cars with 5-star safety","expected_status":"ok"}
+{"id":"E18","query":"Cars with high safety ratings","expected_status":"ok"}
+{"id":"E19","query":"Low mileage cars","expected_status":"needs_clarification"}
+{"id":"E20","query":"Electric cars with range over 400 km","expected_status":"needs_clarification"}
+{"id":"E21","query":"Cars under 15","expected_status":"needs_clarification"}
+{"id":"E22","query":"Cars under $20,000","expected_status":"needs_clarification"}
+{"id":"E23","query":"Cars around 15L","expected_status":"needs_clarification"}
+{"id":"E24","query":"Show cars, cheapest first","expected_status":"ok"}
+{"id":"E25","query":"New electric cars in Bangalore","expected_status":"ok"}
+{"id":"E26","query":"SUVs with ISOFIX under ₹15L","expected_status":"ok"}
+{"id":"E27","query":"Show Zenith cars","expected_status":"ok"}
+{"id":"E28","query":"Show cars","expected_status":"ok"}
+{"id":"E29","query":"Tell me a joke","expected_status":"needs_clarification"}
+{"id":"E30","query":"SUVs under 10L and under 15L","expected_status":"ok"}
+{"id":"E31","query":"Cars with at least 5 seats","expected_status":"ok"}
+{"id":"E32","query":"Cars newer than 2023","expected_status":"ok"}
+{"id":"E33","query":"Affordable cars","expected_status":"ok"}
+{"id":"E34","query":"SUVs with low odometer reading","expected_status":"ok"}
+{"id":"E35","query":"Diesel and petrol cars","expected_status":"needs_clarification"}
+{"id":"E36","query":"Cars with a CVT specifically","expected_status":"needs_clarification"}
