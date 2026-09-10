@@ -63,7 +63,7 @@ src/vehicle_search/
     golden_queries.jsonl   labelled evaluation inputs
 ```
 
-Tests, Dockerfile, `pyproject.toml`, lock file, README and `.env.example` live at repository root. These paths are proposed future code, not files already supplied. Avoid generic agent frameworks, dependency injection containers, separate microservices or abstract repositories for databases not being implemented.
+Tests, Dockerfile, `pyproject.toml`, lock file, README and `.env.example` live at repository root and are part of the implemented MVP. The package is intentionally flat for this assignment; avoid generic agent frameworks, dependency injection containers, separate microservices or abstract repositories for databases not being implemented.
 
 Routes depend on search service; search service depends on parser and repository interfaces plus pure domain functions. Domain modules must not import HTTP, SDK or SQLite code. Dependencies are passed through the app factory so tests replace the parser and database independently.
 

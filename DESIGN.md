@@ -58,11 +58,11 @@ The README should support fresh install, deterministic seed, API startup and the
 |---|---|
 | Code and dependency lock | `pyproject.toml`; editable install verified in `.venv` |
 | Seed generation and reproducibility | `vehicle_search.seed`; 300-row seed smoke-tested |
-| API and deterministic correctness | 7 pytest tests pass; 36/36 golden statuses pass |
+| API and deterministic correctness | 17 pytest tests pass; 36/36 golden statuses pass |
 | Actual provider/model integration | OpenRouter and Gemini adapters implemented; live verification pending |
 | Parsing quality and safety of filtering | 24/24 held-out offline statuses pass; semantic live quality pending |
-| Local and live latency | Local smoke timings returned; formal benchmark pending |
-| Clean local/Docker setup | Local quickstart verified; Docker build not run |
+| Local and live latency | 10k-row local benchmark recorded in CHECKLIST; live latency pending provider availability |
+| Clean local/Docker setup | Local quickstart and clean-copy smoke verified; Docker build blocked by unavailable local daemon |
 
 ## Known scope limits
 
