@@ -71,6 +71,7 @@ def offline_parse(query: str) -> Intent:
     for city in ("bangalore","bengaluru","pune","mumbai","delhi","hyderabad","chennai"):
         if city in low: i.predicates.append(Predicate("city","in",[canonical_category("city",city)],evidence=city))
     if "isofix" in low: i.predicates.append(Predicate("features","contains_all",["isofix"],evidence="isofix"))
+    elif re.search(r"\bfeatures?\b", low): i.issues.append({"code":"unsupported","evidence":"feature"})
     if re.search(r"\b(cheapest|price ascending)\b",low): i.sort="price_asc"
     elif re.search(r"\bmost expensive|price descending\b",low): i.sort="price_desc"
     elif "newest" in low: i.sort="year_desc"

@@ -73,6 +73,10 @@ def test_budget_shorthand_is_not_partially_matched(tmp_path, monkeypatch):
     body=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'SUVs under ₹1k'}).json()
     assert body['status']=='needs_clarification'
 
+def test_unknown_feature_does_not_match_every_vehicle(tmp_path, monkeypatch):
+    body=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'cars with an unknown feature xyz'}).json()
+    assert body['status']=='needs_clarification' and body['results']==[]
+
 def test_invalid_provider_output_can_use_explicit_degraded_fallback(tmp_path, monkeypatch):
     monkeypatch.setenv('PARSER_MODE','llm'); monkeypatch.setenv('LLM_PROVIDER','openrouter')
     monkeypatch.setenv('LLM_MODEL','openrouter/free'); monkeypatch.setenv('OPENROUTER_API_KEY','test-key')
