@@ -18,7 +18,10 @@ def reasons(v, predicates):
     return out
 def execute(intent: Intent, conn, query: str, limit: int, offset: int, sort_override=None):
     validate_intent(intent)
-    if intent.issues or intent.intent!="search": return {"status":"needs_clarification","clarification":{"code":(intent.issues[0]["code"] if intent.issues else "unsupported_query"),"message":"Please provide a supported vehicle search with explicit criteria."},"results":[],"total":0,"assumptions":intent.assumptions}
+    if intent.issues or intent.intent!="search":
+        raw_code=intent.issues[0].get("code") if intent.issues else "unsupported_query"
+        code=raw_code if raw_code in {"unsupported","ambiguous","unverifiable","contradictory","missing_fields","unsupported_query"} else "unsupported"
+        return {"status":"needs_clarification","clarification":{"code":code,"message":"Please provide a supported vehicle search with explicit criteria."},"results":[],"total":0,"assumptions":intent.assumptions}
     candidates=search(conn,intent.predicates); total=len(candidates); effective_sort=sort_override or intent.sort
     ordered=sorted(candidates,key=lambda v:sort_key(v,intent.preferences,effective_sort)); page=ordered[offset:offset+limit]
     return {"status":"ok","interpretation":{"predicates":[p.__dict__ for p in intent.predicates],"preferences":[p.__dict__ for p in intent.preferences],"sort":effective_sort or "relevance","assumptions":intent.assumptions},"results":[{"vehicle":vehicle_json(v),"score":round(score(v,intent.preferences),4),"match_reasons":reasons(v,intent.predicates)} for v in page],"total":total,"limit":limit,"offset":offset,"has_more":offset+len(page)<total}

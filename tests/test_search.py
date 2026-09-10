@@ -80,3 +80,11 @@ def test_invalid_provider_output_can_use_explicit_degraded_fallback(tmp_path, mo
     monkeypatch.setattr('vehicle_search.api.build_parser', lambda *args, **kwargs: BrokenParser())
     body=TestClient(create_app(str(fixture_db(tmp_path)))).post('/api/v1/search',json={'query':'Show SUVs'}).json()
     assert body['status']=='ok' and body['degraded'] is True and body['parser_mode']=='offline'
+
+def test_unknown_issue_codes_are_normalized(tmp_path, monkeypatch):
+    from vehicle_search.domain import Intent
+    from vehicle_search.service import execute
+    conn=connect(str(fixture_db(tmp_path)), read_only=True)
+    body=execute(Intent(issues=[{'code':'PARAMETER_MISSING','evidence':'budget'}]),conn,'query',10,0)
+    conn.close()
+    assert body['clarification']['code']=='unsupported'
