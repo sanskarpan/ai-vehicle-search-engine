@@ -80,7 +80,7 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 - [ ] Document synthetic asking prices/ratings, subjective policies, limitations and optional extensions.
 - [x] Update DESIGN to reflect implemented backend, providers, frontend and measured/pending evidence.
 - [x] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
-- [ ] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
+- [x] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
 - [ ] Confirm generated OpenAPI has request, success, clarification and error models.
 - [x] Add and smoke-test responsive frontend at `/` with examples, sorting, interpretation, pagination, detail and raw JSON states.
 
@@ -88,8 +88,8 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 
 ## M6 — Submission handoff
 
-- [ ] Verify code, seed script, README/API documentation and DESIGN are present as required by Image 1.
-- [ ] Scan tracked files/diffs for credentials, personal paths, huge binaries and generated state.
+- [x] Verify code, seed script, README/API documentation and DESIGN are present as required by Image 1.
+- [x] Scan tracked files/diffs for credentials, personal paths, huge binaries and generated state.
 - [ ] Summarize implementation, commands/results, pending live checks, known limits and final commit if one exists.
 - [ ] Prepare repository for a public forkable GitHub submission; publication itself needs an explicit owner instruction.
 - [ ] Owner confirms public repository is accessible/forkable and supplies submission URL.
