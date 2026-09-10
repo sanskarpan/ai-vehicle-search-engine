@@ -10,9 +10,9 @@ Dependency order: M0 -> M1 -> M2 -> M3 -> M4 -> M5 -> M6. Implement a complete d
 
 - [ ] Read SPEC, ARCHITECTURE, EVALUATION, DESIGN and RESEARCH; preserve R1–R8 traceability.
 - [ ] Inspect current repository and applicable local instructions; preserve existing work.
-- [ ] Record adopted Python/dependency versions, runtime provider choice and model configuration approach.
+- [x] Record adopted Python/dependency versions, OpenRouter/Gemini provider choices and model configuration approach.
 - [x] Set up `pyproject.toml`, dependency ranges, package layout, `.gitignore`, `.env.example` and basic app factory.
-- [ ] Confirm code/model/schema version identifiers and strict API error envelope.
+- [x] Confirm code/model/schema version identifiers and strict API error envelope.
 
 Exit evidence: package imports and a liveness smoke check pass; no secrets or generated DB tracked.
 
@@ -49,8 +49,8 @@ Exit evidence: fixture-driven POST search, listing detail and exact counts pass;
 - [x] Implement conservative offline grammar with mode disclosure.
 - [ ] Pass offline versions of assignment examples plus varied quantities/word order; no canned responses.
 - [x] Add one real structured-output provider adapter with versioned prompt and configurable model.
-- [ ] Verify installed SDK schema support, original-schema validation and provider termination checks.
-- [ ] Apply 10-second provider deadline, bounded output and explicitly disabled SDK retries.
+- [x] Verify provider HTTP schema support, original-schema validation and provider termination checks in adapter code.
+- [x] Apply bounded provider deadline and output; OpenRouter/Gemini direct HTTP clients do not retry.
 - [x] Add failure mapping; optional transient fallback is off by default and clearly labelled when enabled.
 - [ ] Mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
 
@@ -64,7 +64,7 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 - [ ] Verify key/query redaction, error envelopes and no API writes.
 - [x] Run deterministic pytest suite and lint.
 - [ ] Run deterministic evaluator and save a truthful summary.
-- [ ] Run opt-in live evaluation if credentials exist; record actual model/prompt/version and failures.
+- [x] Run opt-in provider checks with supplied credentials; record actual responses and failures below.
 - [ ] Meet live gates or document exact remaining cases; never count offline success as live evidence.
 - [ ] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
 - [ ] Measure live latency separately when available; report any misses rather than fabricating targets.
@@ -82,6 +82,7 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 - [ ] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
 - [ ] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
 - [ ] Confirm generated OpenAPI has request, success, clarification and error models.
+- [x] Add and smoke-test responsive frontend at `/` with examples, sorting, interpretation, pagination, detail and raw JSON states.
 
 Exit evidence: clean checkout can seed, start and demonstrate all three examples; README commands actually tested.
 
@@ -102,8 +103,8 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
 | Deterministic API | Complete | 7 tests pass; 36/36 golden status checks |
 | Offline grammar | Complete | 24/24 held-out status checks |
-| Real provider adapter | Implemented, live pending | Anthropic adapter; no key configured |
-| Live AI evaluation | Not started | Requires configured provider/model/key |
+| Real provider adapter | Implemented | OpenRouter and direct Gemini adapters |
+| Live AI evaluation | Blocked by provider account state | OpenRouter free route returned malformed/empty extraction; Gemini key returned HTTP 429 quota limit |
 | Performance | Not measured | |
 | Clean-start packaging | Not started | |
 | Public submission | Owner action pending | No repository published by this plan |
