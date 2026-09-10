@@ -114,6 +114,10 @@ def require_supported_coverage(intent: Intent, query: str) -> Intent:
     """Reject a schema-valid provider answer that drops a deterministic supported constraint."""
     reference = offline_parse(query)
     if reference.issues:
+        known = {(x.get("code"), x.get("evidence")) for x in intent.issues}
+        for issue in reference.issues:
+            if (issue.get("code"), issue.get("evidence")) not in known:
+                intent.issues.append(issue)
         return intent
     expected = {(p.field, p.op, tuple(p.values)) for p in reference.predicates}
     actual = {(p.field, p.op, tuple(p.values)) for p in intent.predicates}

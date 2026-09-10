@@ -72,3 +72,12 @@ def test_provider_timeout_mapping(monkeypatch):
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == "llm_timeout"
+
+
+def test_provider_cannot_bypass_deterministic_clarification(monkeypatch):
+    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: openrouter_response({
+        **VALID_EXTRACTION,
+        "predicates": [],
+    }))
+    result = OpenRouterParser("openrouter/free", "key").parse("Low mileage cars")
+    assert any(issue["code"] == "ambiguous" for issue in result.issues)
