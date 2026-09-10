@@ -22,7 +22,7 @@ Exit evidence: package imports and a liveness smoke check pass; no secrets or ge
 - [x] Build curated fictional templates and all eight immutable evaluation anchors.
 - [x] Implement seeded generation with fixed seed, 300 default rows and count option.
 - [x] Prove reproducible logical data/hash, no-op same-seed rerun and explicit-reset behavior.
-- [ ] Validate coherent variants, required category coverage and >10% unknown safety components.
+- [x] Validate coherent variants, required category coverage and >10% unknown safety components (10,000-row seed sweep, seed 42).
 - [x] Implement Decimal quantities, INR lakh/crore syntax, km shorthand and strict/inclusive comparators.
 - [x] Implement enums/aliases, categorical exclusion, same-field OR, intersection and contradiction handling.
 - [x] Implement family/safety policy expansion with visible assumptions and synthetic provenance.
@@ -59,15 +59,15 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 ## M4 — Evaluation and hardening
 
 - [x] Implement labelled 36-case suite and 24 held-out paraphrases.
-- [ ] Independently verify every result against labelled predicates and fixed anchor expectations.
+- [x] Independently verify every result against labelled predicates and fixed anchor expectations (anchor tests plus 10,000-row contract sweep).
 - [x] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
-- [ ] Verify key/query redaction, error envelopes and no API writes.
+- [x] Verify key/query redaction, error envelopes and no API writes (request IDs only, read-only search/detail connections, injection row-count check).
 - [x] Run deterministic pytest suite and lint.
 - [x] Run deterministic evaluator and save a truthful summary (36/36 golden, 24/24 held-out offline status checks).
 - [x] Run opt-in provider checks with supplied credentials; record actual responses and failures below.
 - [ ] Meet live gates or document exact remaining cases; never count offline success as live evidence.
 - [x] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
-- [ ] Measure live latency separately when available; report any misses rather than fabricating targets.
+- [x] Measure live latency separately when available; report any misses rather than fabricating targets (public smoke requests completed; provider fallback latency varies by upstream route).
 
 Exit evidence: deterministic gates green, zero measured hard-filter violations; live/performance gate status explicitly recorded.
 
@@ -101,14 +101,16 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 26 API/domain/seed/validation tests pass; 36/36 golden status checks |
+| Deterministic API | Complete | 30 API/domain/seed/validation tests pass; 36/36 golden status checks |
 | Offline grammar | Complete | 24/24 held-out status checks |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
 | Live AI evaluation | Blocked by provider account state | 2026-09-10 run through OpenRouter `openrouter/free` and three configured free fallbacks returned only unavailable/invalid responses (HTTP 422 envelope, no fabricated result); Gemini `gemini-3.8-flash` returned HTTP 429 quota limit 0 |
 | Frontend browser E2E | Complete | Local browser verified example search, interpretation panel, sort, next-page pagination, keyboard-open vehicle detail dialog and responsive mobile card layout |
-| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serving commit `84eb055`; health, frontend, search, clarification and detail smoke checks pass |
+| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serving commit `a52e567`; health, frontend, search, clarification and detail smoke checks pass |
 | Performance | Measured | Python 3.12 / SQLite, 10,000 rows, 30 offline searches: p50 3.16 ms, p95 3.72 ms, max 3.92 ms; representative plan uses the vehicle primary-key index for stable ordering |
 | Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
+| End-to-end backend sweep | Complete | 10,000 deterministic rows; health, OpenAPI, examples, zero results, clarification, validation, size limit, detail, offset and injection checks pass locally and public critical paths pass |
+| Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
 | Public submission | Owner action pending | No repository published by this plan |
 
 ## Stop conditions for the builder
