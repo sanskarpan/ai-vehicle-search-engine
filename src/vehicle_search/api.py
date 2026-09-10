@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 import time
 import uuid
 from pathlib import Path
@@ -86,7 +87,11 @@ def create_app(db_path: str|None=None):
         except FileNotFoundError: raise HTTPException(503,detail={"request_id":rid,"error":{"code":"catalogue_unavailable","message":"catalogue is not seeded","retryable":False}})
     @app.get("/api/v1/vehicles/{vehicle_id}")
     async def vehicle_route(vehicle_id: str):
-        rid=str(uuid.uuid4()); conn=connect(path,read_only=True); v=get(conn,vehicle_id); conn.close()
+        rid=str(uuid.uuid4())
+        try:
+            conn=connect(path,read_only=True); v=get(conn,vehicle_id); conn.close()
+        except (FileNotFoundError, sqlite3.Error):
+            raise HTTPException(503,detail={"request_id":rid,"error":{"code":"catalogue_unavailable","message":"catalogue is not seeded","retryable":False}})
         if not v: raise HTTPException(404,detail={"request_id":rid,"error":{"code":"not_found","message":"vehicle not found","retryable":False}})
         from .domain import vehicle_json
         return {"request_id":rid,"vehicle":vehicle_json(v),"catalogue_version":catalogue_version(path)}

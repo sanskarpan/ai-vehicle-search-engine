@@ -57,7 +57,9 @@ def test_large_request_and_unseeded_readiness(tmp_path, monkeypatch):
     c=client(tmp_path,monkeypatch)
     assert c.post('/api/v1/search',content='{"query":"x"}',headers={'content-type':'application/json','content-length':'9000'}).status_code == 413
     unseeded=tmp_path/'missing.db'
-    assert TestClient(create_app(str(unseeded))).get('/health/ready').status_code == 503
+    empty_client=TestClient(create_app(str(unseeded)))
+    assert empty_client.get('/health/ready').status_code == 503
+    assert empty_client.get('/api/v1/vehicles/veh_000001').status_code == 503
 
 def test_offset_beyond_results_returns_empty_page(tmp_path, monkeypatch):
     response=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'Show cars','offset':10000})
