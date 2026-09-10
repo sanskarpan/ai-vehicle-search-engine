@@ -62,3 +62,7 @@ def test_offset_beyond_results_returns_empty_page(tmp_path, monkeypatch):
     response=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'Show cars','offset':10000})
     body=response.json()
     assert response.status_code==200 and body['total']==8 and body['results']==[] and body['has_more'] is False
+
+def test_budget_shorthand_is_not_partially_matched(tmp_path, monkeypatch):
+    body=client(tmp_path,monkeypatch).post('/api/v1/search',json={'query':'SUVs under ₹1k'}).json()
+    assert body['status']=='needs_clarification'

@@ -31,17 +31,18 @@ def offline_parse(query: str) -> Intent:
         else: i.predicates.append(Predicate("transmission","in",["automatic"],evidence="automatic"))
     elif re.search(r"\bmanual\b",low): i.predicates.append(Predicate("transmission","in",["manual"],evidence="manual"))
     # numeric price and odometer
-    pm=re.search(r"(?:under|below|less than|up to|at most|no more than|over|above|more than)\s+(?:(?:₹|inr\s*)?([\d,.]+\s*(?:lakh|lac|l|crore|cr))|(?:₹|inr\s*)([\d,.]+))",low)
+    pm=re.search(r"(?:under|below|less than|up to|at most|no more than|over|above|more than)\s+(?:(?:₹|inr\s*)?([\d,.]+\s*(?:lakh|lac|l|crore|cr))|(?:₹|inr\s*)([\d,.]+)(?!\s*[a-z]))\b",low)
     if pm:
         op="lte" if re.search(r"up to|at most|no more",pm.group(0)) else ("gt" if re.search(r"over|above|more than",pm.group(0)) else "lt")
         literal=pm.group(1) or pm.group(2)
         try: i.predicates.append(Predicate("price_inr",op,[money_or_km(literal,"price_inr")],evidence=pm.group(0)))
         except ValueError: i.issues.append({"code":"unverifiable","evidence":pm.group(0)})
-    extra_pm=re.search(r"(?:over|above|more than)\s+(?:(?:₹|inr\s*)?([\d,.]+\s*(?:lakh|lac|l|crore|cr))|(?:₹|inr\s*)([\d,.]+))",low)
+    extra_pm=re.search(r"(?:over|above|more than)\s+(?:(?:₹|inr\s*)?([\d,.]+\s*(?:lakh|lac|l|crore|cr))|(?:₹|inr\s*)([\d,.]+)(?!\s*[a-z]))\b",low)
     if extra_pm and (not pm or extra_pm.group(0) != pm.group(0)):
         literal=extra_pm.group(1) or extra_pm.group(2)
         try: i.predicates.append(Predicate("price_inr","gt",[money_or_km(literal,"price_inr")],evidence=extra_pm.group(0)))
         except ValueError: i.issues.append({"code":"unverifiable","evidence":extra_pm.group(0)})
+    elif re.search(r"(?:under|below|up to|at most)\s+(?:₹|inr\s*)\d+\s*(?:k|m|million|thousand)\b",low): i.issues.append({"code":"unsupported","evidence":"budget unit"})
     elif re.search(r"(?:under|below)\s+\$",low): i.issues.append({"code":"unsupported","evidence":"currency"})
     elif re.search(r"(?:under|below|up to|at most)\s+\d",low) and not pm and "km" not in low: i.issues.append({"code":"ambiguous","evidence":"budget unit"})
     om=re.search(r"(?:below|under|less than|up to|at most)\s+([\d,.]+\s*(?:km|k))\s*(?:km|kilomet(?:er|re)s?)?",low)
