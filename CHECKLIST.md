@@ -104,7 +104,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Deterministic API | Complete | 11 API/domain/seed tests pass; 36/36 golden status checks |
 | Offline grammar | Complete | 24/24 held-out status checks |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
-| Live AI evaluation | Blocked by provider account state | OpenRouter free route returned malformed/empty extraction; Gemini key returned HTTP 429 quota limit |
+| Live AI evaluation | Blocked by provider account state | 2026-09-10 run through OpenRouter `openrouter/free` and three configured free fallbacks returned only unavailable/invalid responses (HTTP 422 envelope, no fabricated result); Gemini `gemini-3.8-flash` returned HTTP 429 quota limit 0 |
 | Performance | Measured | Python 3.12 / SQLite, 10,000 rows, 30 offline searches: p50 3.16 ms, p95 3.72 ms, max 3.92 ms; representative plan uses the vehicle primary-key index for stable ordering |
 | Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
 | Public submission | Owner action pending | No repository published by this plan |
