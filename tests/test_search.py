@@ -47,6 +47,8 @@ def test_frontend_is_served(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert 'aria-label="Vehicle search query"' in response.text
     assert 'role="status"' in response.text
+    assert not any(symbol in response.text for symbol in ("⌕", "↗", "✦", "◌", "←", "→", "★", "×"))
+    assert '<svg class="icon icon-search"' in response.text
 
 def test_detail_and_missing_detail_are_stable(tmp_path, monkeypatch):
     c=client(tmp_path,monkeypatch)
