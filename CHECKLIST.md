@@ -8,8 +8,8 @@ Dependency order: M0 -> M1 -> M2 -> M3 -> M4 -> M5 -> M6. Implement a complete d
 
 ## M0 — Establish the contract
 
-- [ ] Read SPEC, ARCHITECTURE, EVALUATION, DESIGN and RESEARCH; preserve R1–R8 traceability.
-- [ ] Inspect current repository and applicable local instructions; preserve existing work.
+- [x] Read SPEC, ARCHITECTURE, EVALUATION, DESIGN and RESEARCH; preserve R1–R8 traceability.
+- [x] Inspect current repository and applicable local instructions; preserve existing work.
 - [x] Record adopted Python/dependency versions, OpenRouter/Gemini provider choices and model configuration approach.
 - [x] Set up `pyproject.toml`, dependency ranges, package layout, `.gitignore`, `.env.example` and basic app factory.
 - [x] Confirm code/model/schema version identifiers and strict API error envelope.
@@ -21,7 +21,7 @@ Exit evidence: package imports and a liveness smoke check pass; no secrets or ge
 - [x] Implement catalogue schema, read-only repository, version checks and exact detail lookup.
 - [x] Build curated fictional templates and all eight immutable evaluation anchors.
 - [x] Implement seeded generation with fixed seed, 300 default rows and count option.
-- [ ] Prove reproducible logical data/hash, no-op same-seed rerun and explicit-reset behavior.
+- [x] Prove reproducible logical data/hash, no-op same-seed rerun and explicit-reset behavior.
 - [ ] Validate coherent variants, required category coverage and >10% unknown safety components.
 - [x] Implement Decimal quantities, INR lakh/crore syntax, km shorthand and strict/inclusive comparators.
 - [x] Implement enums/aliases, categorical exclusion, same-field OR, intersection and contradiction handling.
@@ -32,7 +32,7 @@ Exit evidence: seed/data/normalization tests pass without network access; all th
 ## M2 — Deterministic search path
 
 - [x] Compile only allowed canonical fields/operators to bound SQL values; no LLM-generated SQL.
-- [ ] Retrieve all exact candidates before ranking and paging; eliminate N+1 feature reads.
+- [x] Retrieve all exact candidates before ranking and paging; eliminate N+1 feature reads.
 - [x] Implement specified scoring formulas, stable tiebreakers and explicit sort precedence.
 - [x] Generate explanations from actual data and applied predicates.
 - [x] Implement search/detail schemas, totals, offset, limits and clarification envelope.
@@ -44,15 +44,15 @@ Exit evidence: fixture-driven POST search, listing detail and exact counts pass;
 
 ## M3 — Natural-language parsing
 
-- [ ] Implement raw extraction schema, evidence validation and canonical internal contract.
+- [x] Implement raw extraction schema, evidence validation and canonical internal contract.
 - [ ] Build independent numeric/negation checks and unsupported/ambiguous query handling.
 - [x] Implement conservative offline grammar with mode disclosure.
-- [ ] Pass offline versions of assignment examples plus varied quantities/word order; no canned responses.
-- [x] Add one real structured-output provider adapter with versioned prompt and configurable model.
+- [x] Pass offline versions of assignment examples plus varied quantities/word order; no canned responses.
+- [x] Add structured-output provider adapters for OpenRouter (with configurable free-model fallback chain) and direct Gemini.
 - [x] Verify provider HTTP schema support, original-schema validation and provider termination checks in adapter code.
 - [x] Apply bounded provider deadline and output; OpenRouter/Gemini direct HTTP clients do not retry.
 - [x] Add failure mapping; optional transient fallback is off by default and clearly labelled when enabled.
-- [ ] Mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
+- [x] Add mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
 
 Exit evidence: offline path and SDK contract tests pass; real adapter exists and is reachable from LLM mode. If no key is available, mark live checks pending and continue all independent work.
 
@@ -60,7 +60,7 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 
 - [x] Implement labelled 36-case suite and 24 held-out paraphrases.
 - [ ] Independently verify every result against labelled predicates and fixed anchor expectations.
-- [ ] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
+- [x] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
 - [ ] Verify key/query redaction, error envelopes and no API writes.
 - [x] Run deterministic pytest suite and lint.
 - [x] Run deterministic evaluator and save a truthful summary (36/36 golden, 24/24 held-out offline status checks).
@@ -73,13 +73,13 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 
 ## M5 — Reproducible packaging and docs
 
-- [ ] Add Dockerfile with nonroot runtime and documented seed-before-start flow.
+- [x] Add Dockerfile with nonroot runtime, frontend assets and documented seed-before-start flow (local daemon build pending).
 - [x] Write README with verified local setup, configuration guidance, API curl examples and error examples.
 - [x] Verify zero-key quickstart path; clearly label its restricted offline grammar.
 - [x] Document OpenRouter/Gemini setup, request data sent to provider, token/timeout settings and pending live checks.
 - [ ] Document synthetic asking prices/ratings, subjective policies, limitations and optional extensions.
 - [x] Update DESIGN to reflect implemented backend, providers, frontend and measured/pending evidence.
-- [ ] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
+- [x] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
 - [ ] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
 - [ ] Confirm generated OpenAPI has request, success, clarification and error models.
 - [x] Add and smoke-test responsive frontend at `/` with examples, sorting, interpretation, pagination, detail and raw JSON states.
@@ -101,12 +101,12 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 7 tests pass; 36/36 golden status checks |
+| Deterministic API | Complete | 11 API/domain/seed tests pass; 36/36 golden status checks |
 | Offline grammar | Complete | 24/24 held-out status checks |
-| Real provider adapter | Implemented | OpenRouter and direct Gemini adapters |
+| Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
 | Live AI evaluation | Blocked by provider account state | OpenRouter free route returned malformed/empty extraction; Gemini key returned HTTP 429 quota limit |
-| Performance | Not measured | |
-| Clean-start packaging | Not started | |
+| Performance | Not measured | 10k-row benchmark and query-plan capture remain |
+| Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
 | Public submission | Owner action pending | No repository published by this plan |
 
 ## Stop conditions for the builder

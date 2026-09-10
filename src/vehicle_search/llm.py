@@ -43,12 +43,20 @@ class JsonParser:
 class OpenRouterParser(JsonParser):
     provider = "openrouter"
 
-    def __init__(self, model: str, api_key: str, timeout_seconds: float = 10, max_tokens: int = 1600):
+    def __init__(self, model: str, api_key: str, timeout_seconds: float = 10, max_tokens: int = 1600, fallback_models: list[str] | None = None):
         self.model, self.api_key, self.timeout, self.max_tokens = model, api_key, timeout_seconds, max_tokens
+        self.models = list(dict.fromkeys([model, *(fallback_models or [])]))
 
     def parse(self, query: str):
-        payload = {"model": self.model, "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": query}], "temperature": 0, "max_tokens": self.max_tokens, "response_format": {"type": "json_schema", "json_schema": {"name": "vehicle_intent", "strict": True, "schema": SCHEMA}}, "plugins": [{"id": "response-healing"}]}
-        return _parse_openai_compatible("https://openrouter.ai/api/v1/chat/completions", {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json", "HTTP-Referer": "http://localhost:8000", "X-Title": "AI Vehicle Search Engine"}, payload, query, self.timeout)
+        last = None
+        for model in self.models:
+            payload = {"model": model, "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": query}], "temperature": 0, "max_tokens": self.max_tokens, "reasoning": {"effort": "none"}, "response_format": {"type": "json_schema", "json_schema": {"name": "vehicle_intent", "strict": True, "schema": SCHEMA}}}
+            try:
+                return _parse_openai_compatible("https://openrouter.ai/api/v1/chat/completions", {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json", "HTTP-Referer": "http://localhost:8000", "X-Title": "AI Vehicle Search Engine"}, payload, query, self.timeout)
+            except ParserError as error:
+                last = error
+                if error.code not in {"llm_invalid_response", "llm_unavailable"}: raise
+        raise last or ParserError("llm_unavailable", "OpenRouter provider unavailable")
 
 
 class GeminiParser(JsonParser):
@@ -91,7 +99,7 @@ def _parse_openai_compatible(url, headers, payload, query, timeout):
     except (httpx.HTTPError, json.JSONDecodeError) as exc: raise ParserError("llm_unavailable", "OpenRouter provider unavailable") from exc
 
 
-def build_parser(provider: str, model: str, api_key: str, timeout_seconds: float = 10, max_tokens: int = 1600):
-    if provider == "openrouter": return OpenRouterParser(model, api_key, timeout_seconds, max_tokens)
+def build_parser(provider: str, model: str, api_key: str, timeout_seconds: float = 10, max_tokens: int = 1600, fallback_models: list[str] | None = None):
+    if provider == "openrouter": return OpenRouterParser(model, api_key, timeout_seconds, max_tokens, fallback_models)
     if provider == "gemini": return GeminiParser(model, api_key, timeout_seconds, max_tokens)
     raise ParserError("llm_configuration_error", f"unsupported LLM_PROVIDER: {provider}")

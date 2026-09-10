@@ -46,7 +46,8 @@ def create_app(db_path: str|None=None):
             # Keep import/startup usable for tooling; readiness reports the misconfiguration.
             parser = None
         else:
-            parser = build_parser(provider,model,key,float(os.getenv("LLM_TIMEOUT_SECONDS","10")),int(os.getenv("LLM_MAX_OUTPUT_TOKENS","1600")))
+            fallback_models=[x.strip() for x in os.getenv("OPENROUTER_FALLBACK_MODELS", "").split(",") if x.strip()]
+            parser = build_parser(provider,model,key,float(os.getenv("LLM_TIMEOUT_SECONDS","10")),int(os.getenv("LLM_MAX_OUTPUT_TOKENS","1600")),fallback_models)
     @app.middleware("http")
     async def request_id(request: Request, call_next):
         rid=str(uuid.uuid4())

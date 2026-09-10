@@ -2,8 +2,10 @@ FROM python:3.12-slim
 WORKDIR /app
 COPY pyproject.toml README.md .env.example ./
 COPY src ./src
+COPY frontend ./frontend
 RUN pip install --no-cache-dir .
 RUN useradd --create-home appuser
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
 USER appuser
 ENV PYTHONPATH=/app/src DATABASE_PATH=/app/data/catalogue.db PARSER_MODE=offline
 EXPOSE 8000

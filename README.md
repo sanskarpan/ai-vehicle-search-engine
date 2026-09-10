@@ -11,7 +11,7 @@ python -m pip install -e '.[dev]'
 # For a reproducible environment, install the tested runtime/dev pins first:
 # python -m pip install -r requirements.lock
 python -m vehicle_search.seed --count 300 --seed 42
-uvicorn vehicle_search.api:app --app-dir src --reload --env-file .env
+uvicorn vehicle_search.api:app --app-dir src --reload
 ```
 
 Open <http://127.0.0.1:8000/docs>. The offline parser is intentionally conservative and clearly labelled in responses; it supports the documented grammar for the assignment examples. Try:
@@ -48,6 +48,8 @@ ruff check src tests
 ```
 
 The deterministic evaluator and fixed anchors are defined in `EVALUATION.md`; live model evaluation is opt-in and requires credentials. Run the seed command with `--reset` only when intentionally replacing the local demo database. Use `--count 300 --seed 42` for the documented dataset.
+
+To enable a hosted parser, copy `.env.example` to `.env`, add your provider key, set `PARSER_MODE=llm`, and restart Uvicorn with `--env-file .env`. The checked-in quickstart intentionally stays offline so a clean clone works without credentials.
 
 ## Repository guide
 
