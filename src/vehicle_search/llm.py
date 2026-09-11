@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import time
@@ -163,6 +164,9 @@ class OpenRouterParser(JsonParser):
         self.models = list(dict.fromkeys([model, *(fallback_models or [])]))
 
     def parse(self, query: str):
+        return asyncio.run(self._parse(query))
+
+    async def _parse(self, query: str):
         last = None
         deadline = time.monotonic() + self.timeout
         for model in self.models:
@@ -184,7 +188,7 @@ class OpenRouterParser(JsonParser):
                 },
             }
             try:
-                return _parse_openai_compatible(
+                return await _parse_openai_compatible(
                     "https://openrouter.ai/api/v1/chat/completions",
                     {
                         "Authorization": f"Bearer {self.api_key}",
@@ -217,6 +221,9 @@ class GeminiParser(JsonParser):
         )
 
     def parse(self, query: str):
+        return asyncio.run(self._parse(query))
+
+    async def _parse(self, query: str):
         url = (
             f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
         )
@@ -231,9 +238,10 @@ class GeminiParser(JsonParser):
             },
         }
         try:
-            response = httpx.post(
-                url, params={"key": self.api_key}, json=payload, timeout=self.timeout
-            )
+            async with asyncio.timeout(self.timeout):
+                response = await _post(
+                    url, params={"key": self.api_key}, json=payload, timeout=self.timeout
+                )
             if response.status_code in {400, 401, 403, 404, 422}:
                 raise ParserError(
                     "llm_configuration_error", "Gemini credentials or model configuration rejected"
@@ -268,15 +276,21 @@ class GeminiParser(JsonParser):
             return require_supported_coverage(parse_provider_json(text, query), query)
         except ParserError:
             raise
-        except httpx.TimeoutException as exc:
+        except (TimeoutError, httpx.TimeoutException) as exc:
             raise ParserError("llm_timeout", "Gemini request timed out") from exc
         except (httpx.HTTPError, json.JSONDecodeError) as exc:
             raise ParserError("llm_unavailable", "Gemini provider unavailable") from exc
 
 
-def _parse_openai_compatible(url, headers, payload, query, timeout):
+async def _post(url: str, **kwargs) -> httpx.Response:
+    async with httpx.AsyncClient() as client:
+        return await client.post(url, **kwargs)
+
+
+async def _parse_openai_compatible(url, headers, payload, query, timeout):
     try:
-        response = httpx.post(url, headers=headers, json=payload, timeout=timeout)
+        async with asyncio.timeout(timeout):
+            response = await _post(url, headers=headers, json=payload, timeout=timeout)
         if response.status_code in {400, 401, 403, 404, 422}:
             raise ParserError(
                 "llm_configuration_error", "OpenRouter credentials or model configuration rejected"
@@ -307,7 +321,7 @@ def _parse_openai_compatible(url, headers, payload, query, timeout):
         return require_supported_coverage(parse_provider_json(text, query), query)
     except ParserError:
         raise
-    except httpx.TimeoutException as exc:
+    except (TimeoutError, httpx.TimeoutException) as exc:
         raise ParserError("llm_timeout", "OpenRouter request timed out") from exc
     except (httpx.HTTPError, json.JSONDecodeError) as exc:
         raise ParserError("llm_unavailable", "OpenRouter provider unavailable") from exc

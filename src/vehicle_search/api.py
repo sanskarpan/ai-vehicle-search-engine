@@ -298,7 +298,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
     }
 
     @app.post("/api/v1/search", response_model=SearchResponse, responses=error_models)
-    async def search_route(body: SearchRequest, request: Request) -> dict[str, Any]:
+    def search_route(body: SearchRequest, request: Request) -> dict[str, Any]:
         started = time.perf_counter()
         parse_started = time.perf_counter()
         degraded = False

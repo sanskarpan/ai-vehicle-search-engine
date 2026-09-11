@@ -1,4 +1,6 @@
+import asyncio
 import json
+import time
 
 import httpx
 import pytest
@@ -34,6 +36,13 @@ def openrouter_response(payload, *, status_code=200, finish_reason="stop"):
     )
 
 
+def mock_post(monkeypatch, handler):
+    async def call(*args, **kwargs):
+        return handler(*args, **kwargs)
+
+    monkeypatch.setattr("vehicle_search.llm._post", call)
+
+
 def test_openrouter_falls_back_after_invalid_model(monkeypatch):
     responses = [openrouter_response({"predicates": []}), openrouter_response(VALID_EXTRACTION)]
     seen = []
@@ -42,7 +51,7 @@ def test_openrouter_falls_back_after_invalid_model(monkeypatch):
         seen.append(kwargs["json"]["model"])
         return responses.pop(0)
 
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", fake_post)
+    mock_post(monkeypatch, fake_post)
     result = OpenRouterParser(
         "openrouter/free", "key", fallback_models=["google/gemma-4-26b-a4b-it:free"]
     ).parse("Show SUVs")
@@ -53,7 +62,7 @@ def test_openrouter_falls_back_after_invalid_model(monkeypatch):
 @pytest.mark.parametrize("status", [400, 401, 404, 422, 429, 500])
 def test_provider_status_mapping(monkeypatch, status):
     response = httpx.Response(status, request=httpx.Request("POST", "https://example.test"))
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == (
@@ -63,7 +72,7 @@ def test_provider_status_mapping(monkeypatch, status):
 
 def test_provider_http_408_maps_to_timeout(monkeypatch):
     response = httpx.Response(408, request=httpx.Request("POST", "https://example.test"))
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == "llm_timeout"
@@ -71,7 +80,7 @@ def test_provider_http_408_maps_to_timeout(monkeypatch):
 
 def test_openrouter_maps_truncation_and_invalid_json(monkeypatch):
     responses = [openrouter_response("{", finish_reason="length"), openrouter_response("{")]
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: responses.pop(0))
+    mock_post(monkeypatch, lambda *args, **kwargs: responses.pop(0))
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key", fallback_models=["fallback"]).parse("Show SUVs")
     assert exc.value.code == "llm_invalid_response"
@@ -92,7 +101,7 @@ def test_openrouter_rejects_invalid_response_shapes(monkeypatch, payload):
         json=payload,
         request=httpx.Request("POST", "https://example.test"),
     )
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == "llm_invalid_response"
@@ -100,7 +109,7 @@ def test_openrouter_rejects_invalid_response_shapes(monkeypatch, payload):
 
 def test_gemini_maps_quota_to_unavailable(monkeypatch):
     response = httpx.Response(429, request=httpx.Request("POST", "https://example.test"))
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     with pytest.raises(ParserError) as exc:
         GeminiParser("gemini-3.8-flash", "key").parse("Show SUVs")
     assert exc.value.code == "llm_unavailable"
@@ -119,7 +128,7 @@ def test_gemini_accepts_complete_structured_response(monkeypatch):
         },
         request=httpx.Request("POST", "https://example.test"),
     )
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     result = GeminiParser("gemini-test", "key").parse("Show SUVs")
     assert result.predicates[0].values == ["suv"]
 
@@ -138,7 +147,7 @@ def test_gemini_rejects_non_terminal_output(monkeypatch, finish_reason):
         },
         request=httpx.Request("POST", "https://example.test"),
     )
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: response)
+    mock_post(monkeypatch, lambda *args, **kwargs: response)
     with pytest.raises(ParserError) as exc:
         GeminiParser("gemini-test", "key").parse("Show SUVs")
     assert exc.value.code == "llm_invalid_response"
@@ -153,9 +162,7 @@ def test_gemini_rejects_non_terminal_output(monkeypatch, finish_reason):
 )
 def test_provider_rejects_ungrounded_preference_and_sort_evidence(monkeypatch, change):
     payload = {**VALID_EXTRACTION, **change}
-    monkeypatch.setattr(
-        "vehicle_search.llm.httpx.post", lambda *args, **kwargs: openrouter_response(payload)
-    )
+    mock_post(monkeypatch, lambda *args, **kwargs: openrouter_response(payload))
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == "llm_invalid_response"
@@ -165,15 +172,28 @@ def test_provider_timeout_mapping(monkeypatch):
     def fake_post(*args, **kwargs):
         raise httpx.ReadTimeout("timed out")
 
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", fake_post)
+    mock_post(monkeypatch, fake_post)
     with pytest.raises(ParserError) as exc:
         OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
     assert exc.value.code == "llm_timeout"
 
 
+def test_provider_wall_clock_deadline_cancels_slow_transport(monkeypatch):
+    async def slow_post(*args, **kwargs):
+        await asyncio.sleep(1)
+        return openrouter_response(VALID_EXTRACTION)
+
+    monkeypatch.setattr("vehicle_search.llm._post", slow_post)
+    started = time.perf_counter()
+    with pytest.raises(ParserError) as exc:
+        OpenRouterParser("openrouter/free", "key", timeout_seconds=0.05).parse("Show SUVs")
+    assert exc.value.code == "llm_timeout"
+    assert time.perf_counter() - started < 0.25
+
+
 def test_provider_cannot_bypass_deterministic_clarification(monkeypatch):
-    monkeypatch.setattr(
-        "vehicle_search.llm.httpx.post",
+    mock_post(
+        monkeypatch,
         lambda *args, **kwargs: openrouter_response(
             {
                 **VALID_EXTRACTION,
