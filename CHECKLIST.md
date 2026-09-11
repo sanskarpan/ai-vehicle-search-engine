@@ -92,7 +92,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 - [x] Scan tracked files/diffs for credentials, personal paths, huge binaries and generated state.
 - [x] Summarize implementation, commands/results, pending live checks, known limits and current commits in this ledger.
 - [x] Prepare repository for a public forkable GitHub submission with ignored secrets/generated state and reproducible CI/container configuration.
-- [ ] Owner confirms public repository is accessible/forkable and supplies submission URL.
+- [x] Verify the public repository is accessible/forkable and record `https://github.com/sanskarpan/ai-vehicle-search-engine`.
 - [ ] Optional: record a 3–5 minute walkthrough; this is not a release blocker.
 
 ## Completion ledger
@@ -104,14 +104,14 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Deterministic API | Complete | 93 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
-| Live AI evaluation | Blocked by provider capacity | On 2026-09-11 the improved prompt let a specific OpenRouter free model parse two assignment examples but free capacity remained intermittent; Gemini accepted the translated schema but returned quota/unavailability for all three. Failures closed or used explicitly labelled transient fallback |
-| Frontend browser E2E | Complete | Local browser verified example search, interpretation panel, sort, next-page pagination, keyboard-open vehicle detail dialog and responsive mobile card layout |
-| Render deployment | Redeploy in progress | Final audited commit and public browser/API verification pending below |
+| Live AI evaluation | Partial; full corpus gate pending | On 2026-09-11 the public API served assignment examples 2 and 3 through OpenRouter with valid hard filters; example 1 used labelled transient fallback. Gemini accepted the translated schema but returned quota/unavailability. The 60-query live quality gate remains pending provider capacity |
+| Frontend browser E2E | Complete | Public browser verified live/fallback badges, search, interpretation, price sort, next-page pagination, keyboard detail, raw JSON, reset, 390 px responsive layout and zero console warnings/errors |
+| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` served audited commit `70b0b85`; health, OpenAPI, three examples, validation, 413, 404, injection, hard-filter oracle and request-ID checks passed |
 | Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 100 full API searches at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms, zero errors |
 | Clean-start packaging | Complete | Exact locks install cleanly; image `18e08f8a7239` built locally, seeded 300 rows, served readiness/search as `appuser` |
 | End-to-end backend sweep | Complete | 10,000 deterministic rows; health, OpenAPI, examples, zero results, clarification, validation, size limit, detail, offset and injection checks pass locally and public critical paths pass |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
-| Public submission | Owner action pending | No repository published by this plan |
+| Public submission | Ready | Public `main` repository is accessible and CI passes; optional walkthrough video remains owner work |
 
 ## Stop conditions for the builder
 
