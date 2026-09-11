@@ -33,6 +33,7 @@ def test_provider_values_are_typed_and_nonempty():
         ("12.5L", "price_inr", 1_250_000),
         ("1.2 crore", "price_inr", 12_000_000),
         ("80k", "odometer_km", 80_000),
+        ("80k km", "odometer_km", 80_000),
     ],
 )
 def test_quantity_normalization(text, kind, expected):

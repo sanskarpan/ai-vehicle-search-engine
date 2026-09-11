@@ -137,6 +137,19 @@ SCHEMA = {
 SYSTEM_PROMPT = Path(__file__).with_name("parsing").joinpath("prompt.txt").read_text()
 
 
+def _gemini_schema(value):
+    """Translate the application schema to Gemini's supported schema dialect."""
+    if isinstance(value, dict):
+        return {
+            key: _gemini_schema(item)
+            for key, item in value.items()
+            if key != "additionalProperties"
+        }
+    if isinstance(value, list):
+        return [_gemini_schema(item) for item in value]
+    return value
+
+
 class JsonParser:
     provider = "unknown"
 
@@ -234,7 +247,7 @@ class GeminiParser(JsonParser):
                 "temperature": 0,
                 "maxOutputTokens": self.max_tokens,
                 "responseMimeType": "application/json",
-                "responseSchema": SCHEMA,
+                "responseSchema": _gemini_schema(SCHEMA),
             },
         }
         try:

@@ -65,6 +65,8 @@ def money_or_km(text: str, kind: str) -> int:
         if not (international or indian):
             raise ValueError("invalid comma grouping")
     s = raw.replace(",", "")
+    if kind == "odometer_km":
+        s = re.sub(r"k\s+km$", "k", s)
     m = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(lakh|lac|l|crore|cr|k|km)?", s)
     if not m:
         raise ValueError("invalid quantity")

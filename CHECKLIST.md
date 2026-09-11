@@ -101,13 +101,13 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 91 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 93 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
-| Live AI evaluation | Blocked by provider responses | On 2026-09-11 OpenRouter `openrouter/free` returned schema-invalid output after 3.09 s and Gemini rejected `gemini-3.8-flash` as configuration after 1.69 s; both failed closed with no fabricated result |
+| Live AI evaluation | Blocked by provider capacity | On 2026-09-11 the improved prompt let a specific OpenRouter free model parse two assignment examples but free capacity remained intermittent; Gemini accepted the translated schema but returned quota/unavailability for all three. Failures closed or used explicitly labelled transient fallback |
 | Frontend browser E2E | Complete | Local browser verified example search, interpretation panel, sort, next-page pagination, keyboard-open vehicle detail dialog and responsive mobile card layout |
 | Render deployment | Redeploy in progress | Final audited commit and public browser/API verification pending below |
-| Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 150 offline searches at concurrency 5: p50 16.91 ms, p95 28.92 ms, max 41.66 ms, zero errors |
+| Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 100 full API searches at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms, zero errors |
 | Clean-start packaging | Complete | Exact locks install cleanly; image `18e08f8a7239` built locally, seeded 300 rows, served readiness/search as `appuser` |
 | End-to-end backend sweep | Complete | 10,000 deterministic rows; health, OpenAPI, examples, zero results, clarification, validation, size limit, detail, offset and injection checks pass locally and public critical paths pass |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |

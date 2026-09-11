@@ -133,6 +133,39 @@ def test_gemini_accepts_complete_structured_response(monkeypatch):
     assert result.predicates[0].values == ["suv"]
 
 
+def test_gemini_uses_supported_schema_dialect(monkeypatch):
+    captured = {}
+
+    def respond(*args, **kwargs):
+        captured.update(kwargs["json"]["generationConfig"]["responseSchema"])
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "finishReason": "STOP",
+                        "content": {"parts": [{"text": json.dumps(VALID_EXTRACTION)}]},
+                    }
+                ]
+            },
+            request=httpx.Request("POST", "https://example.test"),
+        )
+
+    mock_post(monkeypatch, respond)
+    GeminiParser("gemini-test", "key").parse("Show SUVs")
+
+    def contains_unsupported(value):
+        if isinstance(value, dict):
+            return "additionalProperties" in value or any(
+                contains_unsupported(item) for item in value.values()
+            )
+        if isinstance(value, list):
+            return any(contains_unsupported(item) for item in value)
+        return False
+
+    assert not contains_unsupported(captured)
+
+
 @pytest.mark.parametrize("finish_reason", ["MAX_TOKENS", "SAFETY", None])
 def test_gemini_rejects_non_terminal_output(monkeypatch, finish_reason):
     response = httpx.Response(
