@@ -101,7 +101,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 89 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 91 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
 | Live AI evaluation | Blocked by provider responses | On 2026-09-11 OpenRouter `openrouter/free` returned schema-invalid output after 3.09 s and Gemini rejected `gemini-3.8-flash` as configuration after 1.69 s; both failed closed with no fabricated result |

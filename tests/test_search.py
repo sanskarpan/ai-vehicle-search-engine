@@ -1,3 +1,5 @@
+import sqlite3
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -322,3 +324,33 @@ def test_unknown_route_uses_stable_error_envelope(tmp_path, monkeypatch):
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "http_error"
     assert response.headers["X-Request-ID"] == response.json()["request_id"]
+
+
+def test_corrupt_catalogue_metadata_fails_all_data_endpoints(tmp_path, monkeypatch):
+    database = fixture_db(tmp_path)
+    connection = sqlite3.connect(database)
+    connection.execute("UPDATE catalogue_metadata SET value='999' WHERE key='record_count'")
+    connection.commit()
+    connection.close()
+    monkeypatch.setenv("PARSER_MODE", "offline")
+    app = TestClient(create_app(str(database)))
+    assert app.get("/health/ready").status_code == 503
+    assert app.post("/api/v1/search", json={"query": "Show cars"}).status_code == 503
+    assert app.get("/api/v1/vehicles/veh_000001").status_code == 503
+
+
+def test_unexpected_fault_uses_safe_internal_error_envelope(tmp_path, monkeypatch):
+    monkeypatch.setenv("PARSER_MODE", "offline")
+    monkeypatch.setattr(
+        "vehicle_search.api.execute",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("sensitive detail")),
+    )
+    app = TestClient(create_app(str(fixture_db(tmp_path))), raise_server_exceptions=False)
+    response = app.post("/api/v1/search", json={"query": "Show cars"})
+    assert response.status_code == 500
+    assert response.json()["error"] == {
+        "code": "internal_error",
+        "message": "internal server error",
+        "retryable": False,
+    }
+    assert "sensitive detail" not in response.text

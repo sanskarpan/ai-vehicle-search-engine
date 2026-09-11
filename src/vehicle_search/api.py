@@ -186,15 +186,6 @@ def _error_response(
     )
 
 
-def _catalogue_version(connection: sqlite3.Connection) -> str:
-    row = connection.execute(
-        "SELECT value FROM catalogue_metadata WHERE key='catalogue_version'"
-    ).fetchone()
-    if not row:
-        raise FileNotFoundError("catalogue metadata missing")
-    return str(row[0])
-
-
 def create_app(db_path: str | None = None) -> FastAPI:
     app = FastAPI(
         title="AI Vehicle Search Engine",
@@ -324,8 +315,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
             parse_ms = (time.perf_counter() - parse_started) * 1000
             retrieve_started = time.perf_counter()
             with closing(connect(database_path, read_only=True)) as connection:
+                version = validate_catalogue(connection)["catalogue_version"]
                 result = execute(intent, connection, body.query, body.limit, body.offset, body.sort)
-                version = _catalogue_version(connection)
             retrieve_ms = (time.perf_counter() - retrieve_started) * 1000
             result.update(
                 {
@@ -385,8 +376,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
     async def vehicle_route(vehicle_id: str, request: Request) -> dict[str, Any]:
         try:
             with closing(connect(database_path, read_only=True)) as connection:
+                version = validate_catalogue(connection)["catalogue_version"]
                 vehicle = get(connection, vehicle_id)
-                version = _catalogue_version(connection)
         except (FileNotFoundError, sqlite3.Error) as exc:
             raise HTTPException(
                 503,
