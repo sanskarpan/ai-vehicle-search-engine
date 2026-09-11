@@ -2,7 +2,7 @@
 
 ## Status and document authority
 
-This is a planning contract for implementation, not evidence of a working service. The repository contained no application files when planning began. The target is a reviewable backend assignment with an actual LLM integration and a reproducible local demonstration.
+This specification began as the implementation contract and remains the behavioral authority. The repository now contains the backend, deterministic seed, evaluator, provider adapters and test frontend; measured completion evidence belongs in `CHECKLIST.md`, not in normative requirements here.
 
 Read [prompt.md](prompt.md) for execution instructions, [ARCHITECTURE.md](ARCHITECTURE.md) for structure, [CHECKLIST.md](CHECKLIST.md) for milestones, [EVALUATION.md](EVALUATION.md) for acceptance, and [RESEARCH.md](RESEARCH.md) for evidence. [DESIGN.md](DESIGN.md) is the assignment-facing design document. Resolve behavior questions in this specification; record deliberate changes consistently across affected files. Planning decisions below are recommendations adopted for this build, not extra requirements attributed to the assignment.
 

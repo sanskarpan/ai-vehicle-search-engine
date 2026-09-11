@@ -2,7 +2,7 @@
 
 ## Purpose and test separation
 
-This document defines tests to build; none have run against an application yet. Behavioral authority is [SPEC.md](SPEC.md). Distinguish parser extraction, deterministic normalization, retrieval, API behavior and live model quality so one layer cannot hide a defect in another.
+This document defines the evaluation method and release gates. The implemented deterministic results are recorded in [CHECKLIST.md](CHECKLIST.md); live provider results remain a separate gate. Behavioral authority is [SPEC.md](SPEC.md). Distinguish parser extraction, deterministic normalization, retrieval, API behavior and live model quality so one layer cannot hide a defect in another.
 
 1. **Pure unit tests:** quantities, comparator handling, aliases, contradiction detection, field/operator validation, score and reason functions.
 2. **Repository tests:** canonical intent objects against a tiny known database; no model calls.

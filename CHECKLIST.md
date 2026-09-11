@@ -45,13 +45,13 @@ Exit evidence: fixture-driven POST search, listing detail and exact counts pass;
 ## M3 — Natural-language parsing
 
 - [x] Implement raw extraction schema, evidence validation and canonical internal contract.
-- [ ] Build independent numeric/negation checks and unsupported/ambiguous query handling.
+- [x] Build independent numeric/negation checks and unsupported/ambiguous query handling.
 - [x] Implement conservative offline grammar with mode disclosure.
 - [x] Pass offline versions of assignment examples plus varied quantities/word order; no canned responses.
 - [x] Add structured-output provider adapters for OpenRouter (with configurable free-model fallback chain) and direct Gemini.
 - [x] Verify provider HTTP schema support, original-schema validation and provider termination checks in adapter code.
 - [x] Apply bounded provider deadline and output; OpenRouter/Gemini direct HTTP clients do not retry.
-- [x] Add failure mapping; optional timeout/availability/invalid-output fallback is off by default and clearly labelled when enabled.
+- [x] Add failure mapping; optional timeout/availability fallback is off by default and clearly labelled when enabled; invalid output never falls back.
 - [x] Add mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
 
 Exit evidence: offline path and SDK contract tests pass; real adapter exists and is reachable from LLM mode. If no key is available, mark live checks pending and continue all independent work.
@@ -63,11 +63,11 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 - [x] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
 - [x] Verify key/query redaction, error envelopes and no API writes (request IDs only, read-only search/detail connections, injection row-count check).
 - [x] Run deterministic pytest suite and lint.
-- [x] Run deterministic evaluator and save a truthful summary (36/36 golden, 24/24 held-out offline status checks).
+- [x] Run deterministic evaluator and save a truthful summary (36/36 golden and 24/24 held-out canonical/result exact matches; zero hard-filter violations).
 - [x] Run opt-in provider checks with supplied credentials; record actual responses and failures below.
 - [ ] Meet live gates or document exact remaining cases; never count offline success as live evidence.
 - [x] Benchmark 10,000-row search and inspect representative SQL query plans; record environment and percentiles.
-- [x] Measure live latency separately when available; report any misses rather than fabricating targets (public smoke requests completed; provider fallback latency varies by upstream route).
+- [x] Measure live latency separately when available; report misses rather than fabricating targets (2026-09-11 OpenRouter attempt returned invalid structured output after 3.09 s; Gemini rejected the configured model after 1.69 s).
 
 Exit evidence: deterministic gates green, zero measured hard-filter violations; live/performance gate status explicitly recorded.
 
@@ -77,11 +77,11 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 - [x] Write README with verified local setup, configuration guidance, API curl examples and error examples.
 - [x] Verify zero-key quickstart path; clearly label its restricted offline grammar.
 - [x] Document OpenRouter/Gemini setup, request data sent to provider, token/timeout settings and pending live checks.
-- [ ] Document synthetic asking prices/ratings, subjective policies, limitations and optional extensions.
+- [x] Document synthetic asking prices/ratings, subjective policies, limitations and optional extensions.
 - [x] Update DESIGN to reflect implemented backend, providers, frontend and measured/pending evidence.
 - [x] Ensure SPEC, architecture, OpenAPI, README examples and evaluator agree after any changes.
 - [x] Execute README commands in a fresh temporary checkout/copy without relying on hidden local files.
-- [ ] Confirm generated OpenAPI has request, success, clarification and error models.
+- [x] Confirm generated OpenAPI has request, success, clarification and error models.
 - [x] Add and smoke-test responsive frontend at `/` with examples, sorting, interpretation, pagination, detail and raw JSON states.
 
 Exit evidence: clean checkout can seed, start and demonstrate all three examples; README commands actually tested.
@@ -90,8 +90,8 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 
 - [x] Verify code, seed script, README/API documentation and DESIGN are present as required by Image 1.
 - [x] Scan tracked files/diffs for credentials, personal paths, huge binaries and generated state.
-- [ ] Summarize implementation, commands/results, pending live checks, known limits and final commit if one exists.
-- [ ] Prepare repository for a public forkable GitHub submission; publication itself needs an explicit owner instruction.
+- [x] Summarize implementation, commands/results, pending live checks, known limits and current commits in this ledger.
+- [x] Prepare repository for a public forkable GitHub submission with ignored secrets/generated state and reproducible CI/container configuration.
 - [ ] Owner confirms public repository is accessible/forkable and supplies submission URL.
 - [ ] Optional: record a 3–5 minute walkthrough; this is not a release blocker.
 
@@ -101,14 +101,14 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 30 API/domain/seed/validation tests pass; 36/36 golden status checks |
-| Offline grammar | Complete | 24/24 held-out status checks |
-| Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable free-model fallbacks and direct Gemini; 7 mocked transport tests pass |
-| Live AI evaluation | Blocked by provider account state | 2026-09-10 run through OpenRouter `openrouter/free` and three configured free fallbacks returned only unavailable/invalid responses (HTTP 422 envelope, no fabricated result); Gemini `gemini-3.8-flash` returned HTTP 429 quota limit 0 |
+| Deterministic API | Complete | 89 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
+| Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
+| Live AI evaluation | Blocked by provider responses | On 2026-09-11 OpenRouter `openrouter/free` returned schema-invalid output after 3.09 s and Gemini rejected `gemini-3.8-flash` as configuration after 1.69 s; both failed closed with no fabricated result |
 | Frontend browser E2E | Complete | Local browser verified example search, interpretation panel, sort, next-page pagination, keyboard-open vehicle detail dialog and responsive mobile card layout |
-| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serving commit `a52e567`; health, frontend, search, clarification and detail smoke checks pass |
-| Performance | Measured | Python 3.12 / SQLite, 10,000 rows, 30 offline searches: p50 3.16 ms, p95 3.72 ms, max 3.92 ms; representative plan uses the vehicle primary-key index for stable ordering |
-| Clean-start packaging | Partial | README quickstart and Dockerfile prepared; Docker daemon unavailable in this environment |
+| Render deployment | Redeploy in progress | Final audited commit and public browser/API verification pending below |
+| Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 150 offline searches at concurrency 5: p50 16.91 ms, p95 28.92 ms, max 41.66 ms, zero errors |
+| Clean-start packaging | Complete | Exact locks install cleanly; image `18e08f8a7239` built locally, seeded 300 rows, served readiness/search as `appuser` |
 | End-to-end backend sweep | Complete | 10,000 deterministic rows; health, OpenAPI, examples, zero results, clarification, validation, size limit, detail, offset and injection checks pass locally and public critical paths pass |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
 | Public submission | Owner action pending | No repository published by this plan |

@@ -32,7 +32,7 @@ Fictional brands/variants with plausible prices and coherent technical combinati
 
 ### D5 — Grounded explanations and stable ordering
 
-Application templates describe why a listing matches. They do not generate new factual claims. Scores follow published formulas; ties are stable and pagination follows complete ranking. Scanning all exact candidates is acceptable at the chosen scale but must be revisited if measurements or catalogue size warrant it.
+Application templates describe why a listing matches. They do not generate new factual claims. Scores follow published formulas; ties are stable and pagination follows complete ranking. SQLite applies hard filters, computes the documented deterministic ordering and pages the globally ranked result set. Only the selected page is hydrated with features; a separate count over the same predicates supplies the exact total. An equivalence suite compares this path with the simple full-candidate Python reference implementation.
 
 ### D6 — Honest offline and live modes
 
@@ -58,11 +58,11 @@ The README should support fresh install, deterministic seed, API startup and the
 |---|---|
 | Code and dependency lock | `pyproject.toml`; editable install verified in `.venv` |
 | Seed generation and reproducibility | `vehicle_search.seed`; 300-row seed smoke-tested |
-| API and deterministic correctness | 30 pytest tests pass; 36/36 golden statuses pass |
-| Actual provider/model integration | OpenRouter and Gemini adapters implemented; live verification pending |
-| Parsing quality and safety of filtering | 24/24 held-out offline statuses pass; semantic live quality pending |
-| Local and live latency | 10k-row local benchmark recorded in CHECKLIST; public smoke requests verified with provider fallback enabled |
-| Clean local/Docker setup | Local quickstart and clean-copy smoke verified; Docker build blocked by unavailable local daemon |
+| API and deterministic correctness | 89 pytest cases pass; 36/36 golden cases match canonical intent and exact results |
+| Actual provider/model integration | OpenRouter and Gemini adapters implemented and transport-tested; the current live quality gate remains blocked by provider responses recorded in CHECKLIST |
+| Parsing quality and safety of filtering | 24/24 held-out cases match canonical intent and exact results; zero oracle-detected hard-filter violations |
+| Local latency | 10,000 rows, 150 requests at concurrency 5: p50 16.91 ms, p95 28.92 ms, max 41.66 ms on Python 3.12.10 / Darwin arm64 |
+| Clean local/Docker setup | Exact runtime/development locks, nonroot image, health check and GitHub Actions verification; local Docker build verified during final audit |
 
 ## Known scope limits
 

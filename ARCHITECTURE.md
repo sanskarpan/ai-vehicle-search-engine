@@ -2,7 +2,7 @@
 
 ## Architecture decision
 
-Use one Python backend process with a constrained intent parser, deterministic domain normalization, parameterized SQLite retrieval and code-generated explanations. The LLM translates language; catalogue records establish facts. The intended scope and behavior are authoritative in [SPEC.md](SPEC.md). This is a proposed architecture, not an implemented system.
+The implementation uses one Python backend process with a constrained intent parser, deterministic domain normalization, parameterized SQLite retrieval and code-generated explanations. The LLM translates language; catalogue records establish facts. The intended scope and behavior are authoritative in [SPEC.md](SPEC.md).
 
 FastAPI's response models support validation and generated API schemas, and its testing interface integrates with pytest. These fit the assignment's API-documentation requirement without a custom UI.[^1][^2] SQLite is appropriate for a local, read-heavy demo with infrequent seeding; a shared write-heavy deployment would need a different storage choice.[^3] The selection is an engineering judgment about this assignment, not a universal stack recommendation.
 
@@ -26,46 +26,32 @@ flowchart TD
 
 ## 1. Code ownership and dependency direction
 
-Use a `src/vehicle_search/` package:
+The implemented package is deliberately compact:
 
 ```text
 src/vehicle_search/
-  main.py                  application factory and lifecycle
-  config.py                environment settings and startup validation
-  api/
-    routes.py              search, detail and health routes
-    schemas.py             public request, response and error models
-    errors.py              application-to-HTTP mapping
-  domain/
-    models.py              listing, predicate, preference, parsed intent
-    vocabulary.py          canonical enums and explicit aliases
-    normalization.py       quantities, intersections and family/safety rules
-    ranking.py             component scores and stable ordering
-    explanations.py        templates from predicates and listing facts
+  api.py                   app factory, schemas, routes, limits and errors
+  domain.py                listing, predicate, preference and JSON models
+  normalization.py         quantities, enums, intersections and policies
+  ranking.py               score formulas and Python reference ordering
   parsing/
-    protocol.py            parser interface and provider-neutral failures
-    llm.py                 single real provider adapter
-    offline.py             complete-consumption demo grammar
-    validation.py          evidence/coverage checks and semantic validation
     prompt.txt             versioned extraction prompt
-  storage/
-    schema.sql             schema version 1, constraints and indexes
-    repository.py          connection lifecycle and read methods
-    compiler.py            predicate/operator whitelist to bound SQL
-  services/
-    search.py              orchestration and timings
+  parsing.py               offline grammar and provider-output validation
+  llm.py                   OpenRouter and Gemini HTTP adapters
+  storage.py               constrained schema, compiler and read repository
+  service.py               search orchestration, ranking and explanations
   seed.py                  CLI using curated templates
-  evaluate.py              deterministic and optional live evaluation CLI
-  data/
-    templates.json         coherent fictional model/variant templates
-    anchors.json           explicit acceptance boundary listings
-    aliases.json           approved display-name aliases
-    golden_queries.jsonl   labelled evaluation inputs
+  evaluate.py              deterministic canonical/result evaluator
+data/
+  golden_queries.jsonl     36 labelled acceptance inputs
+  heldout_queries.jsonl    24 labelled paraphrases
+frontend/                  responsive test client served by the API
+tests/                     unit, adapter, storage and API integration tests
 ```
 
 Tests, Dockerfile, `pyproject.toml`, lock file, README and `.env.example` live at repository root and are part of the implemented MVP. The package is intentionally flat for this assignment; avoid generic agent frameworks, dependency injection containers, separate microservices or abstract repositories for databases not being implemented.
 
-Routes depend on search service; search service depends on parser and repository interfaces plus pure domain functions. Domain modules must not import HTTP, SDK or SQLite code. Dependencies are passed through the app factory so tests replace the parser and database independently.
+Routes depend on the search service; the service depends on parser and repository functions plus pure domain functions. Domain modules do not import HTTP or SQLite code. The app factory accepts a database path, while tests replace provider construction and use temporary databases.
 
 ## 2. Parser contracts
 
@@ -118,7 +104,7 @@ Implement provider adapters behind `parse(query, vocabulary) -> RawIntent`. Open
 
 Configuration: `PARSER_MODE`, `LLM_PROVIDER=openrouter|gemini`, `LLM_MODEL`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `LLM_TIMEOUT_SECONDS=10`, `LLM_MAX_OUTPUT_TOKENS=1600`, `ALLOW_OFFLINE_FALLBACK=false`, `DATABASE_PATH=./data/catalogue.db`, `LOG_LEVEL=INFO`. Fail readiness when LLM mode lacks the selected provider key or model. Offline mode should not instantiate a provider client. Do not require a paid call on startup or health checks.
 
-Use one asynchronous SDK call with an outer deadline and disabled SDK retries. SQLite work is short synchronous work dispatched to a thread; create/use/close the database connection within that worker, not across unrelated request threads. Cancellation should not trigger further provider attempts. A single-worker local runtime is sufficient. Instrument provider time separately from retrieval.
+Use one bounded direct HTTP call with SDK retries absent. OpenRouter fallback models share one overall monotonic deadline. Each API request creates and closes its own read-only SQLite connection. A single-worker local runtime is sufficient for the demonstrated deployment. Instrument parsing and retrieval separately.
 
 ### Offline grammar
 
@@ -136,7 +122,7 @@ Tables:
 
 No descriptions are sent to the LLM or used as executable instructions. Use bound parameters for values; Python's sqlite3 documentation explicitly recommends placeholders instead of assembling values into SQL.[^6] Whitelist column and operator mappings in source code because identifiers and sort fragments cannot be supplied as ordinary value parameters. `in/not_in` uses bounded generated placeholder counts. Feature predicates compile to one EXISTS per required feature. Reject empty value lists before SQL generation.
 
-Use SQL WHERE for all hard predicates, including null-aware safety comparisons. Retrieve all matching rows for ranking in the 300/10,000-row demo, then sort and paginate in code; do not LIMIT before computing global rank. Count the exact matches from this same candidate snapshot. Hydrate features with a bulk query, not N+1 queries. This intentionally trades scalability for simple correct ranking; document the ceiling. If later scale requires SQL-computed scores, preserve identical semantics and tests.
+Use SQL WHERE for all hard predicates, including null-aware safety comparisons. Compute the documented global sort expression in SQLite, then page; count exact matches using the same WHERE clause. Hydrate features for the selected page with a bounded bulk query, not N+1 queries. Tests compare SQL ordering against the full-candidate Python reference for every preference and explicit sort mode.
 
 Initial indexes: `(body_type, price_inr)`, `(fuel_type, transmission, odometer_km)`, `(city_key, price_inr)`, `(make_key, model_key)`, and feature `(feature, vehicle_id)`. Verify useful indexes with representative `EXPLAIN QUERY PLAN`; do not claim every query is index-only. No index is necessary for each possible filter combination at this scale.
 
