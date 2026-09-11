@@ -20,7 +20,16 @@ VALID_EXTRACTION = {
 def openrouter_response(payload, *, status_code=200, finish_reason="stop"):
     return httpx.Response(
         status_code,
-        json={"choices": [{"finish_reason": finish_reason, "message": {"content": json.dumps(payload) if isinstance(payload, dict) else payload}}]},
+        json={
+            "choices": [
+                {
+                    "finish_reason": finish_reason,
+                    "message": {
+                        "content": json.dumps(payload) if isinstance(payload, dict) else payload
+                    },
+                }
+            ]
+        },
         request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"),
     )
 
@@ -34,7 +43,9 @@ def test_openrouter_falls_back_after_invalid_model(monkeypatch):
         return responses.pop(0)
 
     monkeypatch.setattr("vehicle_search.llm.httpx.post", fake_post)
-    result = OpenRouterParser("openrouter/free", "key", fallback_models=["google/gemma-4-26b-a4b-it:free"]).parse("Show SUVs")
+    result = OpenRouterParser(
+        "openrouter/free", "key", fallback_models=["google/gemma-4-26b-a4b-it:free"]
+    ).parse("Show SUVs")
     assert result.predicates[0].values == ["suv"]
     assert seen == ["openrouter/free", "google/gemma-4-26b-a4b-it:free"]
 
@@ -75,9 +86,14 @@ def test_provider_timeout_mapping(monkeypatch):
 
 
 def test_provider_cannot_bypass_deterministic_clarification(monkeypatch):
-    monkeypatch.setattr("vehicle_search.llm.httpx.post", lambda *args, **kwargs: openrouter_response({
-        **VALID_EXTRACTION,
-        "predicates": [],
-    }))
+    monkeypatch.setattr(
+        "vehicle_search.llm.httpx.post",
+        lambda *args, **kwargs: openrouter_response(
+            {
+                **VALID_EXTRACTION,
+                "predicates": [],
+            }
+        ),
+    )
     result = OpenRouterParser("openrouter/free", "key").parse("Low mileage cars")
     assert any(issue["code"] == "ambiguous" for issue in result.issues)
