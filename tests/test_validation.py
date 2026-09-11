@@ -39,6 +39,20 @@ def test_quantity_normalization(text, kind, expected):
     assert money_or_km(text, kind) == expected
 
 
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [("15,00,000", 1_500_000), ("1,500,000", 1_500_000), ("12,34,567", 1_234_567)],
+)
+def test_price_accepts_valid_indian_and_international_grouping(text, expected):
+    assert money_or_km(text, "price_inr") == expected
+
+
+@pytest.mark.parametrize("text", ["1,2,3L", "15,000,00", "1,00,00"])
+def test_quantity_rejects_malformed_comma_grouping(text):
+    with pytest.raises(ValueError, match="comma grouping"):
+        money_or_km(text, "price_inr")
+
+
 def test_provider_numeric_units_are_normalized():
     intent = parse_provider_json(
         '{"intent":"search","predicates":[{"field":"price_inr","op":"lt","values":["15L"],"evidence":"under 15L"}],"preferences":[],"sort":"unspecified","sort_evidence":"","issues":[],"policy_terms":[]}',
@@ -66,3 +80,28 @@ def test_validation_is_idempotent():
     first = list(intent.issues)
     validate_intent(intent)
     assert intent.issues == first
+
+
+def test_positive_category_fully_excluded_is_contradictory():
+    intent = validate_intent(
+        Intent(
+            predicates=[
+                Predicate("fuel_type", "in", ["diesel"]),
+                Predicate("fuel_type", "not_in", ["diesel"]),
+            ]
+        )
+    )
+    assert any(issue["code"] == "contradictory" for issue in intent.issues)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "[]",
+        '{"intent":"search"}',
+        '{"intent":"search","predicates":"bad","preferences":[],"sort":"unspecified","sort_evidence":"","issues":[],"policy_terms":[]}',
+    ],
+)
+def test_provider_rejects_invalid_top_level_shapes(payload):
+    with pytest.raises(ParserError, match="invalid"):
+        parse_provider_json(payload, "Show SUVs")

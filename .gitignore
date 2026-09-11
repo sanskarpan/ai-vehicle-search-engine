@@ -6,5 +6,8 @@ __pycache__/
 data/*.db
 *.log
 *.egg-info/
+.coverage
+htmlcov/
+build/
 .pytest_cache/
 .ruff_cache/

@@ -15,6 +15,7 @@ SCHEMA = {
         "intent": {"type": "string", "enum": ["search", "clarify", "out_of_scope"]},
         "predicates": {
             "type": "array",
+            "maxItems": 16,
             "items": {
                 "type": "object",
                 "properties": {
@@ -41,8 +42,13 @@ SCHEMA = {
                         "type": "string",
                         "enum": ["eq", "lt", "lte", "gt", "gte", "in", "not_in", "contains_all"],
                     },
-                    "values": {"type": "array", "items": {"type": "string"}},
-                    "evidence": {"type": "string"},
+                    "values": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "items": {"type": "string", "minLength": 1, "maxLength": 80},
+                    },
+                    "evidence": {"type": "string", "minLength": 1, "maxLength": 200},
                 },
                 "required": ["field", "op", "values", "evidence"],
                 "additionalProperties": False,
@@ -50,6 +56,7 @@ SCHEMA = {
         },
         "preferences": {
             "type": "array",
+            "maxItems": 4,
             "items": {
                 "type": "object",
                 "properties": {
@@ -57,7 +64,7 @@ SCHEMA = {
                         "type": "string",
                         "enum": ["family", "safety", "affordability", "low_odometer"],
                     },
-                    "evidence": {"type": "string"},
+                    "evidence": {"type": "string", "minLength": 1, "maxLength": 200},
                 },
                 "required": ["code", "evidence"],
                 "additionalProperties": False,
@@ -77,6 +84,7 @@ SCHEMA = {
         "sort_evidence": {"type": "string"},
         "issues": {
             "type": "array",
+            "maxItems": 8,
             "items": {
                 "type": "object",
                 "properties": {
@@ -90,7 +98,7 @@ SCHEMA = {
                             "missing_fields",
                         ],
                     },
-                    "evidence": {"type": "string"},
+                    "evidence": {"type": "string", "minLength": 1, "maxLength": 200},
                 },
                 "required": ["code", "evidence"],
                 "additionalProperties": False,
@@ -98,6 +106,7 @@ SCHEMA = {
         },
         "policy_terms": {
             "type": "array",
+            "maxItems": 3,
             "items": {
                 "type": "object",
                 "properties": {
@@ -105,7 +114,7 @@ SCHEMA = {
                         "type": "string",
                         "enum": ["family", "high_safety", "five_star_safety"],
                     },
-                    "evidence": {"type": "string"},
+                    "evidence": {"type": "string", "minLength": 1, "maxLength": 200},
                 },
                 "required": ["code", "evidence"],
                 "additionalProperties": False,
@@ -235,17 +244,25 @@ class GeminiParser(JsonParser):
                 raise ParserError("llm_unavailable", "Gemini provider unavailable")
             response.raise_for_status()
             data = response.json()
+            if not isinstance(data, dict):
+                raise ParserError("llm_invalid_response", "Gemini returned an invalid response")
             candidates = data.get("candidates", [])
-            if not candidates:
+            if (
+                not isinstance(candidates, list)
+                or not candidates
+                or not isinstance(candidates[0], dict)
+            ):
                 raise ParserError("llm_invalid_response", "Gemini returned no extraction")
             finish = candidates[0].get("finishReason")
             if finish != "STOP":
                 raise ParserError(
                     "llm_invalid_response", "Gemini refused or truncated the extraction"
                 )
-            text = "".join(
-                p.get("text", "") for p in candidates[0].get("content", {}).get("parts", [])
-            )
+            content = candidates[0].get("content")
+            parts = content.get("parts") if isinstance(content, dict) else None
+            if not isinstance(parts, list) or not all(isinstance(part, dict) for part in parts):
+                raise ParserError("llm_invalid_response", "Gemini returned an invalid response")
+            text = "".join(part.get("text", "") for part in parts)
             if not text:
                 raise ParserError("llm_invalid_response", "Gemini returned no extraction")
             return require_supported_coverage(parse_provider_json(text, query), query)
@@ -270,13 +287,21 @@ def _parse_openai_compatible(url, headers, payload, query, timeout):
             raise ParserError("llm_unavailable", "OpenRouter provider unavailable")
         response.raise_for_status()
         data = response.json()
-        choice = (data.get("choices") or [{}])[0]
+        if not isinstance(data, dict):
+            raise ParserError("llm_invalid_response", "OpenRouter returned an invalid response")
+        choices = data.get("choices")
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+            raise ParserError("llm_invalid_response", "OpenRouter returned an invalid response")
+        choice = choices[0]
         finish = choice.get("finish_reason")
         if finish != "stop":
             raise ParserError(
                 "llm_invalid_response", "OpenRouter refused or truncated the extraction"
             )
-        text = choice.get("message", {}).get("content")
+        message = choice.get("message", {})
+        if not isinstance(message, dict):
+            raise ParserError("llm_invalid_response", "OpenRouter returned an invalid response")
+        text = message.get("content")
         if not isinstance(text, str) or not text:
             raise ParserError("llm_invalid_response", "OpenRouter returned no extraction")
         return require_supported_coverage(parse_provider_json(text, query), query)

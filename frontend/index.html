@@ -15,7 +15,7 @@
       </section>
       <section class="workspace">
         <aside class="sidebar"><div class="side-heading"><span>SEARCH CONTROLS</span><button id="reset" class="text-button">Reset</button></div><label>Sort results<select id="sort"><option value="">Relevance</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="odometer_asc">Lowest odometer</option><option value="year_desc">Newest first</option></select></label><div class="side-note"><span class="spark" aria-hidden="true"><svg class="icon icon-spark" viewBox="0 0 24 24" focusable="false"><path d="m12 2 1.8 7.2L21 11l-7.2 1.8L12 20l-1.8-7.2L3 11l7.2-1.8L12 2Z"></path></svg></span><div><strong>AI interpretation</strong><p>Every result is checked against the filters extracted from your request.</p></div></div><div class="legend"><span class="legend-dot"></span> Synthetic catalogue<br><span class="legend-dot green"></span> Ratings are demo data</div></aside>
-        <div class="results-pane"><div class="results-head"><div><span class="eyebrow">MATCHES</span><h2 id="resultTitle">Ready when you are</h2></div><div class="result-tools"><button id="interpretBtn" class="outline-button" hidden>View interpretation</button><button id="rawBtn" class="icon-button" title="Show raw response" hidden>{ }</button></div></div>
+        <div class="results-pane"><div class="results-head"><div><span class="eyebrow">MATCHES</span><h2 id="resultTitle">Ready when you are</h2></div><div class="result-tools"><button id="interpretBtn" class="outline-button" hidden>View interpretation</button><button id="rawBtn" class="icon-button" aria-label="Show raw API response" title="Show raw API response" hidden>{ }</button></div></div>
           <div id="notice" class="notice" role="status" aria-live="polite" hidden></div><div id="interpretation" class="interpretation" hidden></div><div id="results" class="results-grid"><div class="empty-state"><div class="empty-orbit" aria-hidden="true"><svg class="icon icon-empty" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8"></circle><path d="M12 7v5l3 2"></path></svg></div><h3>Search the catalogue</h3><p>Use one of the example briefs above or describe your ideal vehicle.</p></div></div>
           <div class="pager" id="pager" hidden><button id="prev" aria-label="Previous page"><svg class="icon icon-page" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 5-7 7 7 7"></path></svg></button><span id="pageLabel"></span><button id="next" aria-label="Next page"><svg class="icon icon-page" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"></path></svg></button></div>
         </div>
@@ -23,7 +23,7 @@
     </main>
     <footer><span>autofinder / AI vehicle search</span><span id="version">synthetic demo · v1</span></footer>
   </div>
-  <dialog id="detailDialog" aria-labelledby="detailContent"><button class="dialog-close" aria-label="Close details" onclick="detailDialog.close()"><svg class="icon icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"></path></svg></button><div id="detailContent"></div></dialog>
-  <script src="/static/app.js?v=6"></script>
+  <dialog id="detailDialog" aria-label="Vehicle details and API response"><button id="dialogClose" class="dialog-close" aria-label="Close details"><svg class="icon icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"></path></svg></button><div id="detailContent"></div></dialog>
+  <script src="/static/app.js?v=7"></script>
 </body>
 </html>

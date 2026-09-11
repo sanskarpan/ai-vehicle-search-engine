@@ -252,6 +252,88 @@ def offline_parse(query: str) -> Intent:
         intent.issues.append({"code": "unsupported", "evidence": "ignore instructions"})
     if re.search(r"\b(around|about|roughly|near)\b", low) and re.search(r"\d", low):
         intent.issues.append({"code": "ambiguous", "evidence": "approximate budget"})
+    if re.search(r"\bnear me\b", low):
+        intent.issues.append({"code": "unsupported", "evidence": "near me"})
+    if re.search(r"\b\d+\s+seats?\b", low) and not (explicit_seats or family_size):
+        intent.issues.append({"code": "ambiguous", "evidence": "seat comparison"})
+
+    # The fallback grammar must not silently drop residual requirements.
+    residual = low
+    recognized_phrases = [
+        *body_terms.values(),
+        r"\b(?:diesel|petrol|electric|cng|hybrid|automatic|manual|at|cvt|dct|amt)\b",
+        r"\b(?:bangalore|bengaluru|pune|mumbai|delhi|hyderabad|chennai)\b",
+        r"\b(?:isofix|esc|rear[ _]ac|parking[ _]camera|cruise[ _]control)\b",
+        r"\b(?:high safety|highly rated for safety|strong safety|five[ -]star|5[ -]star)\b",
+        r"\b(?:low mileage|low odometer|fuel economy|mileage efficiency|rear air conditioning|rear aircon)\b",
+        r"\b(?:cheapest|most expensive|price ascending|price descending|newest)\b",
+        r"\b(?:newer than|family of|family for|at least|minimum|less than|up to|at most|no more than|more than)\b",
+        r"\b(?:under|below|over|above|between|around|about|roughly|near)\b",
+        r"\b(?:exclude|excluding|without|not|ignore|bypass|specifically|specific|only)\b",
+        r"(?:₹|\$|inr)?\s*\d[\d,.]*\s*(?:lakh|lac|crore|cr|kmpl|km|kilomet(?:er|re)s?|k|l)?",
+    ]
+    for pattern in recognized_phrases:
+        residual = re.sub(pattern, " ", residual)
+    for predicate in intent.predicates:
+        if predicate.field in {"make", "model"}:
+            for value in predicate.values:
+                residual = re.sub(rf"\b{re.escape(str(value))}\b", " ", residual)
+    filler = {
+        "a",
+        "all",
+        "and",
+        "at",
+        "budget",
+        "car",
+        "cars",
+        "costing",
+        "family",
+        "find",
+        "first",
+        "five",
+        "for",
+        "from",
+        "has",
+        "have",
+        "in",
+        "k",
+        "kilometer",
+        "kilometers",
+        "kilometre",
+        "kilometres",
+        "km",
+        "least",
+        "list",
+        "listing",
+        "listings",
+        "me",
+        "mileage",
+        "most",
+        "new",
+        "of",
+        "or",
+        "please",
+        "price",
+        "priced",
+        "ratings",
+        "reading",
+        "safety",
+        "seat",
+        "seats",
+        "show",
+        "star",
+        "than",
+        "the",
+        "to",
+        "used",
+        "vehicle",
+        "vehicles",
+        "with",
+        "affordable",
+    }
+    remaining = [token for token in re.findall(r"[a-z]+", residual) if token not in filler]
+    if remaining:
+        intent.issues.append({"code": "unsupported", "evidence": " ".join(remaining[:4])})
     return validate_intent(intent)
 
 
@@ -269,18 +351,24 @@ def parse_provider_json(raw: str, query: str) -> Intent:
         "issues",
         "policy_terms",
     }
-    if set(obj) - allowed:
-        raise ParserError("llm_invalid_response", "provider returned extra fields")
+    if not isinstance(obj, dict) or set(obj) != allowed:
+        raise ParserError("llm_invalid_response", "provider returned an invalid object shape")
     if obj.get("intent") not in {"search", "clarify", "out_of_scope"}:
         raise ParserError("llm_invalid_response", "invalid intent")
+    array_limits = {"predicates": 16, "preferences": 4, "issues": 8, "policy_terms": 3}
+    for name, maximum in array_limits.items():
+        if not isinstance(obj[name], list) or len(obj[name]) > maximum:
+            raise ParserError("llm_invalid_response", f"invalid {name}")
     i = Intent(intent=obj.get("intent", "search"), parser_mode="llm")
     for p in obj.get("predicates", []):
-        if not isinstance(p, dict) or not {"field", "op", "values", "evidence"} <= set(p):
+        if not isinstance(p, dict) or set(p) != {"field", "op", "values", "evidence"}:
             raise ParserError("llm_invalid_response", "invalid predicate")
         if (
             not isinstance(p["values"], list)
             or not p["values"]
+            or len(p["values"]) > 8
             or not all(isinstance(v, str) for v in p["values"])
+            or any(not v or len(v) > 80 for v in p["values"])
         ):
             raise ParserError("llm_invalid_response", "invalid predicate values")
         if (
@@ -289,7 +377,7 @@ def parse_provider_json(raw: str, query: str) -> Intent:
             or not isinstance(p["op"], str)
         ):
             raise ParserError("llm_invalid_response", "invalid predicate fields")
-        if not p["evidence"] or p["evidence"] not in query:
+        if not p["evidence"] or len(p["evidence"]) > 200 or p["evidence"] not in query:
             raise ParserError("llm_invalid_response", "predicate evidence is not in query")
         i.predicates.append(Predicate(p["field"], p["op"], p["values"], "explicit", p["evidence"]))
     for preference in obj.get("preferences", []):
@@ -297,21 +385,27 @@ def parse_provider_json(raw: str, query: str) -> Intent:
             raise ParserError("llm_invalid_response", "invalid preference")
         if not isinstance(preference["code"], str) or not isinstance(preference["evidence"], str):
             raise ParserError("llm_invalid_response", "invalid preference")
-        if not preference["evidence"] or preference["evidence"] not in query:
+        if (
+            not preference["evidence"]
+            or len(preference["evidence"]) > 200
+            or preference["evidence"] not in query
+        ):
             raise ParserError("llm_invalid_response", "preference evidence is not in query")
         i.preferences.append(Preference(preference["code"], preference["evidence"]))
     i.sort = obj.get("sort") if obj.get("sort") != "unspecified" else None
     sort_evidence = obj.get("sort_evidence")
     if not isinstance(obj.get("sort"), str) or not isinstance(sort_evidence, str):
         raise ParserError("llm_invalid_response", "invalid sort")
-    if i.sort is not None and (not sort_evidence or sort_evidence not in query):
+    if i.sort is not None and (
+        not sort_evidence or len(sort_evidence) > 200 or sort_evidence not in query
+    ):
         raise ParserError("llm_invalid_response", "sort evidence is not in query")
     for issue in obj.get("issues", []):
         if not isinstance(issue, dict) or set(issue) != {"code", "evidence"}:
             raise ParserError("llm_invalid_response", "invalid issue")
         if not isinstance(issue["code"], str) or not isinstance(issue["evidence"], str):
             raise ParserError("llm_invalid_response", "invalid issue")
-        if not issue["evidence"] or issue["evidence"] not in query:
+        if not issue["evidence"] or len(issue["evidence"]) > 200 or issue["evidence"] not in query:
             raise ParserError("llm_invalid_response", "issue evidence is not in query")
         i.issues.append(issue)
     for x in obj.get("policy_terms", []):
@@ -319,7 +413,13 @@ def parse_provider_json(raw: str, query: str) -> Intent:
             raise ParserError("llm_invalid_response", "invalid policy term")
         code = x.get("code")
         ev = x.get("evidence", "")
-        if not isinstance(code, str) or not isinstance(ev, str) or not ev or ev not in query:
+        if (
+            not isinstance(code, str)
+            or not isinstance(ev, str)
+            or not ev
+            or len(ev) > 200
+            or ev not in query
+        ):
             raise ParserError("llm_invalid_response", "policy evidence is not in query")
         if code == "family":
             i.predicates.append(Predicate("seats", "gte", [5], "policy", ev))

@@ -11,6 +11,7 @@ from .storage import SCHEMA, SCHEMA_VERSION, connect, insert_vehicle
 
 SEED_VERSION = "synthetic_demo_v1"
 REFERENCE_DATE = "2026-01-01"
+REFERENCE_DATE_YEAR = 2026
 
 ANCHORS = [
     (
@@ -151,11 +152,11 @@ ANCHORS = [
     ),
 ]
 TEMPLATES = [
-    ("Aster", "Trail", "suv", ("diesel", "petrol")),
-    ("Meridian", "City", "sedan", ("petrol", "diesel")),
-    ("Cedar", "People", "mpv", ("diesel", "petrol")),
-    ("Nova", "Swift", "hatchback", ("petrol", "cng")),
-    ("Aster", "Volt", "suv", ("electric",)),
+    ("Aster", "Trail", "suv", ("diesel", "petrol"), 1_200_000, 3_200_000),
+    ("Meridian", "City", "sedan", ("petrol", "diesel", "hybrid"), 800_000, 2_200_000),
+    ("Cedar", "People", "mpv", ("diesel", "petrol"), 1_100_000, 2_600_000),
+    ("Nova", "Swift", "hatchback", ("petrol", "cng"), 550_000, 1_200_000),
+    ("Aster", "Volt", "suv", ("electric",), 1_200_000, 2_800_000),
 ]
 
 
@@ -211,9 +212,11 @@ def build(count: int = 300, seed: int = 42) -> list[Vehicle]:
         )
     while len(vehicles) < count:
         index = len(vehicles) + 1
-        make, model, body, fuels = rng.choice(TEMPLATES)
+        make, model, body, fuels, minimum_price, maximum_price = rng.choice(TEMPLATES)
         fuel = rng.choice(fuels)
-        transmission = "automatic" if fuel == "electric" or rng.random() < 0.45 else "manual"
+        transmission = (
+            "automatic" if fuel in {"electric", "hybrid"} or rng.random() < 0.45 else "manual"
+        )
         seats = (
             7
             if body == "mpv"
@@ -226,7 +229,10 @@ def build(count: int = 300, seed: int = 42) -> list[Vehicle]:
         year = rng.randint(2018, 2026)
         condition = "new" if year >= 2025 and rng.random() < 0.5 else "used"
         odometer = rng.randint(0, 500) if condition == "new" else rng.randint(1000, 160000)
-        price = rng.randint(650000, 3200000)
+        new_price = rng.randint(minimum_price, maximum_price)
+        age = max(0, REFERENCE_DATE_YEAR - year)
+        depreciation = min(0.45, age * 0.055) if condition == "used" else 0
+        price = max(1, round(new_price * (1 - depreciation)))
         adult = None if rng.random() < 0.12 else rng.randint(2, 5)
         child = None if rng.random() < 0.12 else rng.randint(2, 5)
         city = rng.choice(["pune", "mumbai", "delhi", "hyderabad", "chennai", "bengaluru"])

@@ -16,7 +16,7 @@ def test_seed_build_is_reproducible():
     assert first == second
     assert (
         hashlib.sha256(json.dumps(first, sort_keys=True).encode()).hexdigest()
-        == "d8ae2d00dfddb9c9490bda231f8d8be95dfca13b8f3303417d0c490da45867d1"
+        == "b050ce4550294d633e454c39e8e609c4e987357fecd0a58255f3e1c035618bd6"
     )
 
 
@@ -61,7 +61,13 @@ def test_database_constraints_reject_invalid_vehicle(tmp_path):
 def test_default_seed_coverage_and_coherence():
     vehicles = build(300, 42)
     assert {vehicle.body_type for vehicle in vehicles} == {"suv", "sedan", "hatchback", "mpv"}
-    assert {vehicle.fuel_type for vehicle in vehicles} >= {"petrol", "diesel", "cng", "electric"}
+    assert {vehicle.fuel_type for vehicle in vehicles} == {
+        "petrol",
+        "diesel",
+        "cng",
+        "electric",
+        "hybrid",
+    }
     assert {vehicle.transmission for vehicle in vehicles} == {"manual", "automatic"}
     assert sum(vehicle.adult_safety_stars is None for vehicle in vehicles) / len(vehicles) > 0.10
     assert sum(vehicle.child_safety_stars is None for vehicle in vehicles) / len(vehicles) > 0.10
@@ -69,8 +75,18 @@ def test_default_seed_coverage_and_coherence():
     assert all(
         vehicle.transmission == "automatic"
         for vehicle in vehicles
-        if vehicle.fuel_type == "electric"
+        if vehicle.fuel_type in {"electric", "hybrid"}
     )
+
+
+def test_generated_prices_follow_segment_ranges_and_age_depreciation():
+    vehicles = build(10_000, 42)[8:]
+    by_model = {}
+    for vehicle in vehicles:
+        by_model.setdefault((vehicle.make, vehicle.model), []).append(vehicle)
+    assert max(v.price_inr for v in by_model[("Nova", "Swift")]) <= 1_200_000
+    assert min(v.price_inr for v in by_model[("Aster", "Trail")]) >= 660_000
+    assert all(v.odometer_km <= 500 for v in vehicles if v.condition == "new")
 
 
 def test_failed_seed_rolls_back_all_rows(tmp_path, monkeypatch):

@@ -163,6 +163,21 @@ def test_unknown_feature_does_not_match_every_vehicle(tmp_path, monkeypatch):
     assert body["status"] == "needs_clarification" and body["results"] == []
 
 
+@pytest.mark.parametrize(
+    "query",
+    [
+        "luxury cars",
+        "SUVs with sunroof",
+        "red automatic cars",
+        "cheap but spacious cars",
+        "cars near me",
+    ],
+)
+def test_offline_parser_does_not_drop_residual_requirements(tmp_path, monkeypatch, query):
+    body = client(tmp_path, monkeypatch).post("/api/v1/search", json={"query": query}).json()
+    assert body["status"] == "needs_clarification" and body["results"] == []
+
+
 def test_invalid_provider_output_never_uses_degraded_fallback(tmp_path, monkeypatch):
     monkeypatch.setenv("PARSER_MODE", "llm")
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")

@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0,<9", "ruff>=0.6,<1"]
+dev = ["httpx2>=2.12,<3", "pytest>=8.0,<9", "ruff>=0.6,<1"]
 
 [project.scripts]
 vehicle-seed = "vehicle_search.seed:main"

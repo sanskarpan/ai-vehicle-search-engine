@@ -56,7 +56,15 @@ ALLOWED_SORTS = {None, "relevance", "price_asc", "price_desc", "odometer_asc", "
 
 
 def money_or_km(text: str, kind: str) -> int:
-    s = text.strip().lower().replace(",", "").replace("₹", "")
+    raw = text.strip().lower().replace("₹", "")
+    number_match = re.match(r"([\d,.]+)", raw.strip())
+    if number_match and "," in number_match.group(1):
+        integer_part = number_match.group(1).split(".", 1)[0]
+        international = re.fullmatch(r"\d{1,3}(?:,\d{3})+", integer_part)
+        indian = re.fullmatch(r"\d{1,2}(?:,\d{2})*,\d{3}", integer_part)
+        if not (international or indian):
+            raise ValueError("invalid comma grouping")
+    s = raw.replace(",", "")
     m = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(lakh|lac|l|crore|cr|k|km)?", s)
     if not m:
         raise ValueError("invalid quantity")
@@ -220,8 +228,13 @@ def validate_intent(intent: Intent) -> Intent:
         positive = [
             set(p.values) for p in intent.predicates if p.field == field and p.op in {"eq", "in"}
         ]
-        if positive and not set.intersection(*positive):
-            issues.append({"code": "contradictory", "evidence": field})
+        excluded = set().union(
+            *(set(p.values) for p in intent.predicates if p.field == field and p.op == "not_in")
+        )
+        if positive:
+            possible = set.intersection(*positive)
+            if not possible or possible <= excluded:
+                issues.append({"code": "contradictory", "evidence": field})
 
     seen = set()
     for issue in issues:
