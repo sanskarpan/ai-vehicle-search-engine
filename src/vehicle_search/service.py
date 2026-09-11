@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from .domain import Intent, vehicle_json
 from .normalization import validate_intent
-from .ranking import score, sort_key
-from .storage import search
+from .ranking import score
+from .storage import search_page
 
 
 def reasons(v, predicates):
@@ -68,14 +68,13 @@ def execute(intent: Intent, conn, query: str, limit: int, offset: int, sort_over
             "offset": offset,
             "has_more": False,
         }
-    candidates = search(conn, intent.predicates)
-    total = len(candidates)
     effective_sort = sort_override or intent.sort
     assumptions = list(intent.assumptions)
     if sort_override and intent.sort and sort_override != intent.sort:
         assumptions.append(f"API sort '{sort_override}' overrides query sort '{intent.sort}'.")
-    ordered = sorted(candidates, key=lambda v: sort_key(v, intent.preferences, effective_sort))
-    page = ordered[offset : offset + limit]
+    page, total = search_page(
+        conn, intent.predicates, intent.preferences, effective_sort, limit, offset
+    )
     return {
         "status": "ok",
         "clarification": None,

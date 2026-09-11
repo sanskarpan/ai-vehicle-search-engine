@@ -2,9 +2,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from vehicle_search.api import create_app
+from vehicle_search.domain import Predicate, Preference
 from vehicle_search.parsing import ParserError
+from vehicle_search.ranking import sort_key
 from vehicle_search.seed import seed_database
-from vehicle_search.storage import connect
+from vehicle_search.storage import connect, search, search_page
 
 
 def fixture_db(tmp_path):
@@ -17,6 +19,31 @@ def client(tmp_path, monkeypatch):
     db = fixture_db(tmp_path)
     monkeypatch.setenv("PARSER_MODE", "offline")
     return TestClient(create_app(str(db)))
+
+
+@pytest.mark.parametrize(
+    ("preferences", "sort"),
+    [
+        ([], None),
+        ([Preference("family")], None),
+        ([Preference("safety"), Preference("affordability")], None),
+        ([Preference("low_odometer")], None),
+        ([], "price_asc"),
+        ([], "price_desc"),
+        ([], "odometer_asc"),
+        ([], "year_desc"),
+    ],
+)
+def test_sql_paging_matches_reference_python_order(tmp_path, preferences, sort):
+    database = tmp_path / "ranking.db"
+    seed_database(str(database), count=300, seed=42)
+    connection = connect(str(database), read_only=True)
+    predicates = [Predicate("body_type", "in", ["suv", "sedan"])]
+    expected = sorted(search(connection, predicates), key=lambda v: sort_key(v, preferences, sort))
+    actual, total = search_page(connection, predicates, preferences, sort, 37, 11)
+    connection.close()
+    assert total == len(expected)
+    assert [vehicle.id for vehicle in actual] == [vehicle.id for vehicle in expected[11:48]]
 
 
 def test_strict_price_boundary(tmp_path, monkeypatch):

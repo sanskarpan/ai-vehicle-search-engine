@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .domain import Predicate, Vehicle
+from .domain import Predicate, Preference, Vehicle
 
 SCHEMA_VERSION = "1"
 SCHEMA = """
@@ -108,8 +108,10 @@ def _row_vehicle(row: tuple, features: list[str]) -> Vehicle:
 
 def _feature_map(connection: sqlite3.Connection, ids: list[str]) -> dict[str, list[str]]:
     features = {vehicle_id: [] for vehicle_id in ids}
-    for start in range(0, len(ids), 500):
-        chunk = ids[start : start + 500]
+    variable_limit = connection.getlimit(sqlite3.SQLITE_LIMIT_VARIABLE_NUMBER)
+    chunk_size = max(1, min(variable_limit, 5_000))
+    for start in range(0, len(ids), chunk_size):
+        chunk = ids[start : start + chunk_size]
         placeholders = ",".join("?" for _ in chunk)
         rows = connection.execute(
             f"SELECT vehicle_id, feature FROM vehicle_features "
@@ -121,7 +123,7 @@ def _feature_map(connection: sqlite3.Connection, ids: list[str]) -> dict[str, li
     return features
 
 
-def search(connection: sqlite3.Connection, predicates: list[Predicate]) -> list[Vehicle]:
+def _compile_where(predicates: list[Predicate]) -> tuple[str, list[object]]:
     where: list[str] = []
     arguments: list[object] = []
     features: list[str] = []
@@ -175,17 +177,79 @@ def search(connection: sqlite3.Connection, predicates: list[Predicate]) -> list[
             "WHERE vf.vehicle_id = v.id AND vf.feature = ?)"
         )
         arguments.append(feature)
+    return (" WHERE " + " AND ".join(where) if where else ""), arguments
+
+
+def _select_rows(
+    connection: sqlite3.Connection, where_sql: str, arguments: list[object], suffix: str = ""
+) -> list[tuple]:
     sql = (
         "SELECT v.id,v.make,v.model,v.variant,v.year,v.price_inr,v.odometer_km,"
         "v.condition,v.body_type,v.fuel_type,v.transmission,v.seats,v.city,"
         "v.adult_safety_stars,v.child_safety_stars,v.description,v.safety_test_year,"
-        "v.safety_applicability FROM vehicles v"
-        + (" WHERE " + " AND ".join(where) if where else "")
-        + " ORDER BY v.id"
+        "v.safety_applicability FROM vehicles v" + where_sql + suffix
     )
     rows = connection.execute(sql, arguments).fetchall()
+    return rows
+
+
+def search(connection: sqlite3.Connection, predicates: list[Predicate]) -> list[Vehicle]:
+    where_sql, arguments = _compile_where(predicates)
+    rows = _select_rows(connection, where_sql, arguments, " ORDER BY v.id")
     feature_map = _feature_map(connection, [row[0] for row in rows])
     return [_row_vehicle(row, feature_map[row[0]]) for row in rows]
+
+
+def search_page(
+    connection: sqlite3.Connection,
+    predicates: list[Predicate],
+    preferences: list[Preference],
+    sort: str | None,
+    limit: int,
+    offset: int,
+) -> tuple[list[Vehicle], int]:
+    """Filter, rank and page in SQLite so broad catalogues do not hydrate every match."""
+    where_sql, arguments = _compile_where(predicates)
+    total = connection.execute("SELECT count(*) FROM vehicles v" + where_sql, arguments).fetchone()[
+        0
+    ]
+    explicit_orders = {
+        "price_desc": "v.price_inr DESC, v.id ASC",
+        "odometer_asc": "v.odometer_km ASC, v.id ASC",
+        "year_desc": "v.year DESC, v.id ASC",
+        "price_asc": "v.price_inr ASC, v.id ASC",
+    }
+    if sort in explicit_orders:
+        order = explicit_orders[sort]
+    else:
+        components = []
+        codes = {preference.code for preference in preferences}
+        if "family" in codes:
+            components.append(
+                "(0.5 * min(v.seats / 7.0, 1.0)"
+                " + 0.25 * EXISTS(SELECT 1 FROM vehicle_features f1"
+                " WHERE f1.vehicle_id=v.id AND f1.feature='isofix')"
+                " + 0.25 * EXISTS(SELECT 1 FROM vehicle_features f2"
+                " WHERE f2.vehicle_id=v.id AND f2.feature='rear_ac'))"
+            )
+        if "safety" in codes:
+            components.append(
+                "((coalesce(v.adult_safety_stars,0) + coalesce(v.child_safety_stars,0)) / 10.0)"
+            )
+        if "affordability" in codes:
+            components.append("(1.0 - min(v.price_inr / 5000000.0, 1.0))")
+        if "low_odometer" in codes:
+            components.append("(1.0 - min(v.odometer_km / 200000.0, 1.0))")
+        relevance = " + ".join(components) if components else "0.0"
+        order = f"({relevance}) DESC, v.price_inr ASC, v.id ASC"
+    rows = _select_rows(
+        connection,
+        where_sql,
+        [*arguments, limit, offset],
+        f" ORDER BY {order} LIMIT ? OFFSET ?",
+    )
+    feature_map = _feature_map(connection, [row[0] for row in rows])
+    return [_row_vehicle(row, feature_map[row[0]]) for row in rows], total
 
 
 def get(connection: sqlite3.Connection, vehicle_id: str) -> Vehicle | None:
