@@ -99,7 +99,11 @@ function render(body) {
   if (body.status === "needs_clarification") {
     setNotice(clarification);
   } else {
-    setNotice(meta.degraded ? "Provider unavailable — showing conservative offline interpretation." : "");
+    setNotice(
+      meta.degraded
+        ? "The hosted parser could not safely complete this request. Showing a conservative offline interpretation."
+        : "",
+    );
   }
   bindVehicleCards();
 }
@@ -231,9 +235,14 @@ $("#rawBtn").addEventListener("click", () => {
 $("#dialogClose").addEventListener("click", () => $("#detailDialog").close());
 
 fetchJson("/health/ready")
-  .then(() => {
+  .then((data) => {
     $("#health").classList.add("ok");
     $("#health").innerHTML = "<i></i> service ready";
+    $("#providerBadge").textContent = data.parser_mode === "llm" ? "AI MODE READY" : "OFFLINE DEMO";
+    $("#providerBadge").className = `badge ${data.parser_mode === "llm" ? "live" : "muted"}`;
+    if (data.catalogue_version) {
+      $("#version").textContent = `synthetic demo · ${data.catalogue_version}`;
+    }
   })
   .catch(() => {
     $("#health").classList.add("bad");
