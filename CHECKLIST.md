@@ -101,7 +101,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 95 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 99 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
 | Live AI evaluation | Partial; full corpus gate pending | On 2026-09-11 the public API served assignment examples 2 and 3 through OpenRouter with valid hard filters; example 1 used labelled transient fallback. Gemini accepted the translated schema but returned quota/unavailability. The 60-query live quality gate remains pending provider capacity |

@@ -161,6 +161,38 @@ def test_request_id_and_openapi_contract(tmp_path, monkeypatch):
     assert operation["responses"]["422"]["content"]["application/json"]["schema"]
 
 
+@pytest.mark.parametrize(
+    ("method", "path", "kwargs"),
+    [
+        ("get", "/health/ready", {}),
+        ("post", "/api/v1/search", {"json": {"query": "Show cars"}}),
+        (
+            "post",
+            "/api/v1/search",
+            {
+                "content": '{"query":"x"}',
+                "headers": {"content-type": "application/json", "content-length": "9000"},
+            },
+        ),
+    ],
+)
+def test_security_headers_cover_success_and_early_errors(
+    tmp_path, monkeypatch, method, path, kwargs
+):
+    response = getattr(client(tmp_path, monkeypatch), method)(path, **kwargs)
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Cache-Control"] == "no-store"
+    assert response.headers["Permissions-Policy"] == "camera=(), microphone=(), geolocation=()"
+
+
+def test_frontend_has_restrictive_content_security_policy(tmp_path, monkeypatch):
+    response = client(tmp_path, monkeypatch).get("/")
+    assert "frame-ancestors 'none'" in response.headers["Content-Security-Policy"]
+    assert "script-src 'self'" in response.headers["Content-Security-Policy"]
+    assert "Content-Security-Policy" not in client(tmp_path, monkeypatch).get("/docs").headers
+
+
 def test_offset_beyond_results_returns_empty_page(tmp_path, monkeypatch):
     response = client(tmp_path, monkeypatch).post(
         "/api/v1/search", json={"query": "Show cars", "offset": 10000}

@@ -168,6 +168,23 @@ def _request_id(request: Request) -> str:
     return getattr(request.state, "request_id", str(uuid.uuid4()))
 
 
+def _security_headers(request: Request) -> dict[str, str]:
+    headers = {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "same-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    }
+    if request.url.path == "/":
+        headers["Content-Security-Policy"] = (
+            "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; "
+            "object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
+        )
+    if request.url.path.startswith(("/api/", "/health/")):
+        headers["Cache-Control"] = "no-store"
+    return headers
+
+
 def _error_response(
     request: Request,
     status: int,
@@ -182,7 +199,7 @@ def _error_response(
             "request_id": request_id,
             "error": {"code": code, "message": message, "retryable": retryable},
         },
-        headers={"X-Request-ID": request_id},
+        headers={"X-Request-ID": request_id, **_security_headers(request)},
     )
 
 
@@ -253,8 +270,8 @@ def create_app(db_path: str | None = None) -> FastAPI:
                 return _error_response(request, 413, "request_too_large", "request body too large")
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "same-origin"
+        for name, value in _security_headers(request).items():
+            response.headers[name] = value
         return response
 
     @app.exception_handler(RequestValidationError)
