@@ -1,5 +1,7 @@
 # AI Vehicle Search Engine
 
+[![CI](https://github.com/sanskarpan/ai-vehicle-search-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/sanskarpan/ai-vehicle-search-engine/actions/workflows/ci.yml)
+
 FastAPI backend for searching a synthetic Indian vehicle catalogue with natural-language queries. The assignment brief asks for a backend, a README/API description, `DESIGN.md`, and reproducible realistic seed data. This repository also includes the architecture, specification, evaluation plan and builder prompt.
 
 ## Quickstart (offline, no API key)
@@ -29,15 +31,46 @@ curl -s http://127.0.0.1:8000/api/v1/search \
 
 Prices and safety ratings are synthetic demonstration values. They are not live inventory or NCAP certifications. “Under/below” is strict; “up to/at most” is inclusive. Family and high-safety meanings are disclosed in the response and in `SPEC.md`.
 
-## LLM mode
+## LLM mode and configuration
 
-The default local `.env` is configured for OpenRouter’s `openrouter/free` router, which selects an available free model. OpenRouter uses its chat-completions endpoint and JSON Schema `response_format`; the adapter sends no catalogue text and allows no tools. To target a specific model, set `LLM_MODEL` to a currently available slug. To use Google directly, set `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`, and provide `GEMINI_API_KEY`. Keep keys in the ignored `.env`, never commit them. The Gemini API supports structured JSON output for this model. Verify model availability for the account before live evaluation because provider catalogues and free routes can change.
+The example configuration uses OpenRouter’s `openrouter/free` router, which selects an available free model. OpenRouter uses its chat-completions endpoint and JSON Schema `response_format`; the adapter sends no catalogue text and allows no tools. To target a specific model, set `LLM_MODEL` to a currently available slug. To use Google directly, set `LLM_PROVIDER=gemini`, set an available Gemini model in `LLM_MODEL`, and provide `GEMINI_API_KEY`. The adapter requests structured JSON and applies the same local validation for either provider. Keep keys in the ignored `.env`, never commit them. Verify model availability for the account before live evaluation because provider catalogues and free routes can change.
 
 The hosted adapter performs one bounded structured-output extraction call; application code validates the result and executes only allowlisted SQL predicates. Default tests never call the network. `ALLOW_OFFLINE_FALLBACK` is false by default. When enabled, timeout, transient unavailability or provider output that fails deterministic validation uses the conservative parser and is explicitly marked `parser_mode: offline`, `degraded: true`. The fallback returns either an exact supported interpretation or a safe clarification, never a partial search. Credential and model configuration errors do not fall back. `RENDER_API_KEY` is a deployment credential and is not read by the application.
 
+| Variable | Purpose | Default |
+|---|---|---|
+| `PARSER_MODE` | Select `offline` or `llm` extraction | `offline` |
+| `LLM_PROVIDER` | Select `openrouter` or `gemini` | `openrouter` |
+| `LLM_MODEL` | Provider model slug | `openrouter/free` in `.env.example` |
+| `OPENROUTER_API_KEY` / `GEMINI_API_KEY` | Credential for the selected provider | unset |
+| `OPENROUTER_FALLBACK_MODELS` | Ordered models tried after the primary OpenRouter model | documented list in `.env.example` |
+| `LLM_TIMEOUT_SECONDS` | Deadline for the single provider call | `10` |
+| `LLM_MAX_OUTPUT_TOKENS` | Provider response ceiling | `1600` |
+| `ALLOW_OFFLINE_FALLBACK` | Permit a disclosed conservative fallback after eligible provider failures | `false` |
+| `DATABASE_PATH` | SQLite catalogue location | `./data/catalogue.db` |
+| `APP_URL` | OpenRouter attribution URL | `http://localhost:8000` |
+
 ## API
 
-`POST /api/v1/search` accepts `{query, limit?, offset?, sort?}`. It returns an interpretation, exact total, paginated catalogue records, deterministic score, grounded match reasons and a `meta` object containing parser mode, provider, degradation state, catalogue version, timings and warnings. A valid but ambiguous or unsupported request returns HTTP 200 with `status: needs_clarification` and no partial results. Malformed request data is HTTP 422; an unseeded catalogue is HTTP 503. `GET /api/v1/vehicles/{id}` returns a single record. `/health/live` and `/health/ready` provide liveness/readiness. OpenAPI is available at `/openapi.json`. Requests above 8 KiB receive HTTP 413. Every JSON response and `X-Request-ID` header share one request identifier.
+| Method and path | Contract |
+|---|---|
+| `POST /api/v1/search` | Accepts `{query, limit?, offset?, sort?}` and returns the interpretation, exact total, paginated records, deterministic scores, grounded match reasons and execution metadata. |
+| `GET /api/v1/vehicles/{vehicle_id}` | Returns the complete catalogue record and catalogue version, or the standard 404 envelope. |
+| `GET /health/live` | Process liveness; does not depend on the catalogue. |
+| `GET /health/ready` | Checks configuration and the seeded catalogue, and reports parser mode/version. |
+| `GET /openapi.json`, `/docs`, `/redoc` | Machine-readable OpenAPI and interactive API documentation. |
+| `GET /` | Responsive review frontend backed by the same public API. |
+
+A successful search returns HTTP 200 with `status: ok`. A valid but ambiguous or unsupported request also returns HTTP 200 with `status: needs_clarification` and no partial results. Malformed request data is HTTP 422; an unseeded catalogue or unavailable provider is HTTP 503; invalid provider output is HTTP 502; provider timeout is HTTP 504. Requests above 8 KiB receive HTTP 413. Errors use `{request_id, error: {code, message, retryable}}`. Every JSON response and `X-Request-ID` header share one request identifier. See [SPEC.md](SPEC.md) for the field-level schemas, comparator semantics and sorting contract.
+
+Useful error-path checks after startup:
+
+```bash
+curl -i http://127.0.0.1:8000/api/v1/search \
+  -H 'content-type: application/json' \
+  -d '{"query":""}'
+curl -i http://127.0.0.1:8000/api/v1/vehicles/does-not-exist
+```
 
 The deployed review environment is [ai-vehicle-search-engine-0a7f.onrender.com](https://ai-vehicle-search-engine-0a7f.onrender.com/). Check its health and version before relying on it because Render deployments and free provider capacity are external services.
 
