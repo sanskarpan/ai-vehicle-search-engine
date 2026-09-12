@@ -95,6 +95,15 @@ def test_positive_category_fully_excluded_is_contradictory():
     assert any(issue["code"] == "contradictory" for issue in intent.issues)
 
 
+def test_single_category_equality_normalizes_to_canonical_in_operator():
+    intent = validate_intent(
+        Intent(predicates=[Predicate("body_type", "eq", ["SUV"], evidence="SUV")])
+    )
+    assert intent.issues == []
+    assert intent.predicates[0].op == "in"
+    assert intent.predicates[0].values == ["suv"]
+
+
 @pytest.mark.parametrize(
     "payload",
     [

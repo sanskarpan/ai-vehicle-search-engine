@@ -58,7 +58,7 @@ The README should support fresh install, deterministic seed, API startup and the
 |---|---|
 | Code and dependency lock | `pyproject.toml`; editable install verified in `.venv` |
 | Seed generation and reproducibility | `vehicle_search.seed`; 300-row seed smoke-tested |
-| API and deterministic correctness | 99 pytest cases pass; 36/36 golden cases match canonical intent and exact results |
+| API and deterministic correctness | 100 pytest cases pass; 36/36 golden cases match canonical intent and exact results |
 | Actual provider/model integration | OpenRouter and Gemini adapters implemented and transport-tested; the current live quality gate remains blocked by provider responses recorded in CHECKLIST |
 | Parsing quality and safety of filtering | 24/24 held-out cases match canonical intent and exact results; zero oracle-detected hard-filter violations |
 | Local latency | 10,000 rows, 100 full API requests at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms on Python 3.12.10 / Darwin arm64 |

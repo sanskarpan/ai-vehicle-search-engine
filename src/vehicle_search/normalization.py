@@ -187,6 +187,8 @@ def validate_intent(intent: Intent) -> Intent:
                 issues.append({"code": "unverifiable", "evidence": p.evidence})
         elif p.field in CATEGORY_FIELDS:
             p.values = [canonical_category(p.field, str(v)) for v in p.values]
+            if p.op == "eq":
+                p.op = "in"
             if p.field in CLOSED_CATEGORIES and any(
                 v not in CLOSED_CATEGORIES[p.field] for v in p.values
             ):

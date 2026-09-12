@@ -101,15 +101,15 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 99 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 100 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
-| Live AI evaluation | Partial; full corpus gate pending | On 2026-09-11 the public API served assignment examples 2 and 3 through OpenRouter with valid hard filters; example 1 used labelled transient fallback. Gemini accepted the translated schema but returned quota/unavailability. The 60-query live quality gate remains pending provider capacity |
-| Frontend browser E2E | Complete | Public browser verified live/fallback badges, search, interpretation, price sort, next-page pagination, keyboard detail, raw JSON, reset, 390 px responsive layout and zero console warnings/errors |
-| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` served audited commit `70b0b85`; health, OpenAPI, three examples, validation, 413, 404, injection, hard-filter oracle and request-ID checks passed |
+| Live AI evaluation | Partial; provider-quality gate pending | A 2026-09-12 pre-fix production run exposed 12/60 provider availability/semantic failures. After the guarded-fallback fix, the identical public corpus passed 60/60 decisions, 45/45 canonical cases, 60/60 request IDs and zero hard-filter violations; free-provider capacity caused all 60 to disclose offline fallback, so this is production reliability evidence rather than a live-model quality pass |
+| Frontend browser E2E | Complete | Public browser verified accurate initial/fallback badges, catalogue version, result and clarification states, search, interpretation, sorting, six-page pagination, keyboard detail, raw JSON, reset, 390 px responsive layout and zero console warnings/errors |
+| Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serves latest `main`; health, OpenAPI/Swagger, full 60-query corpus, validation, malformed/oversized requests, 404, injection, security headers, ordering, complete 300-row pagination, detail consistency, hard-filter oracle and request-ID checks pass |
 | Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 100 full API searches at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms, zero errors |
 | Clean-start packaging | Complete | Exact locks install cleanly; image `18e08f8a7239` built locally, seeded 300 rows, served readiness/search as `appuser` |
-| End-to-end backend sweep | Complete | 10,000 deterministic rows; health, OpenAPI, examples, zero results, clarification, validation, size limit, detail, offset and injection checks pass locally and public critical paths pass |
+| End-to-end backend sweep | Complete | 10,000-row local gates plus public 300-row catalogue: 60/60 labelled decisions, 45/45 canonical cases, 300 unique records across six pages, all explicit sorts, detail equality, health/OpenAPI/errors and zero hard-filter violations |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
 | Public submission | Ready | Public `main` repository is accessible and CI passes; optional walkthrough video remains owner work |
 
