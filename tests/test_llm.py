@@ -236,3 +236,14 @@ def test_provider_cannot_bypass_deterministic_clarification(monkeypatch):
     )
     result = OpenRouterParser("openrouter/free", "key").parse("Low mileage cars")
     assert any(issue["code"] == "ambiguous" for issue in result.issues)
+
+
+def test_provider_cannot_add_constraints_or_clarification_to_supported_query(monkeypatch):
+    payload = {
+        **VALID_EXTRACTION,
+        "issues": [{"code": "ambiguous", "evidence": "SUVs"}],
+    }
+    mock_post(monkeypatch, lambda *args, **kwargs: openrouter_response(payload))
+    with pytest.raises(ParserError) as exc:
+        OpenRouterParser("openrouter/free", "key").parse("Show SUVs")
+    assert exc.value.code == "llm_invalid_response"

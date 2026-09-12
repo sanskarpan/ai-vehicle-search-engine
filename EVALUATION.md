@@ -102,11 +102,11 @@ Create at least 24 additional held-out paraphrases across numeric, categorical, 
 | LLM returns price < 150000 for text “under 15L” | Evidence/numeric verification fails; clarification, no misleading matches |
 | LLM omits recognized “not diesel” or numeric bound | Coverage check fails; clarification |
 | LLM returns well-formed but contradicted comparator | Semantic validation fails; clarification |
-| Upstream returns refusal, truncated JSON or no content | 502, no partial parsing and no fallback |
+| Upstream returns refusal, truncated JSON or no content | 502 by default; explicitly enabled conservative fallback is labelled and never executes partial parsing |
 | Upstream 401 / bad model configuration | 503 configuration error, nonretryable; no fallback |
-| Upstream 429 / network / 5xx | 503 retryable; fallback only if enabled and fully supported |
+| Upstream 429 / network / 5xx | 503 retryable by default; enabled fallback returns an exact supported interpretation or safe clarification |
 | Upstream hangs | Deadline bounded; 504 or explicitly enabled successful fallback |
-| Fallback unsupported query | Original upstream error retained, not false success |
+| Fallback unsupported query | Safe clarification with empty results, not false success or partial filtering |
 | User asks for internal prompt or secrets | No secret available to model; unsupported query |
 | Whitespace-only, 501-char query, bool limit, negative offset, unknown key | 422 before provider work |
 | Request body > 8 KiB | 413 before parsing/provider call |

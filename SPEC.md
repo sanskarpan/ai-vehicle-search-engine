@@ -218,7 +218,7 @@ Configuration `PARSER_MODE=offline|llm`, default offline for a zero-key quicksta
 
 In LLM mode, all valid in-scope search requests reach the adapter after inexpensive request checks. Send only query text, schema, domain policies and compact categorical vocabulary, not the full catalogue. Use one call per request, no autonomous tools or generated SQL. Deadline 10 seconds end-to-end for the provider operation, output cap 1,600 tokens initially, SDK retries explicitly disabled for MVP so timeout/cost behavior is bounded. Treat these as starting limits to measure, not provider guarantees.
 
-`ALLOW_OFFLINE_FALLBACK=false` by default. If explicitly enabled, a transient timeout/unavailability may use the conservative parser only when the full request is supported; report `parser_mode: offline`, `degraded: true` and a warning. If fallback cannot fully interpret the query, retain the original upstream error. Never fallback on bad credentials, schema-invalid output, refusal or truncation. Offline success must not masquerade as LLM success.
+`ALLOW_OFFLINE_FALLBACK=false` by default. If explicitly enabled, a timeout, transient unavailability or provider interpretation that fails application validation may use the conservative parser; report `parser_mode: offline`, `degraded: true`, the failure category and a warning. The conservative parser either returns a fully supported interpretation or withholds results with a safe clarification. It never executes partial predicates. Bad credentials or invalid model configuration remain nonretryable errors. Offline success must not masquerade as LLM success.
 
 ## 7. Quality and completion contract
 

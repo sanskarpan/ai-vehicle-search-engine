@@ -446,7 +446,7 @@ def parse_provider_json(raw: str, query: str) -> Intent:
 
 
 def require_supported_coverage(intent: Intent, query: str) -> Intent:
-    """Reject a schema-valid provider answer that drops a deterministic supported constraint."""
+    """Reject provider semantics that disagree with deterministically understood language."""
     reference = offline_parse(query)
     if reference.issues:
         known = {(x.get("code"), x.get("evidence")) for x in intent.issues}
@@ -465,6 +465,16 @@ def require_supported_coverage(intent: Intent, query: str) -> Intent:
 
     expected = {key(p) for p in reference.predicates}
     actual = {key(p) for p in intent.predicates}
-    if expected and not expected.issubset(actual):
-        raise ParserError("llm_invalid_response", "provider omitted a supported query constraint")
+    expected_preferences = {preference.code for preference in reference.preferences}
+    actual_preferences = {preference.code for preference in intent.preferences}
+    if (
+        intent.intent != reference.intent
+        or expected != actual
+        or expected_preferences != actual_preferences
+        or intent.sort != reference.sort
+        or intent.issues
+    ):
+        raise ParserError(
+            "llm_invalid_response", "provider disagreed with deterministic query validation"
+        )
     return intent

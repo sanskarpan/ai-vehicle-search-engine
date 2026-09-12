@@ -207,7 +207,7 @@ def test_offline_parser_does_not_drop_residual_requirements(tmp_path, monkeypatc
     assert body["status"] == "needs_clarification" and body["results"] == []
 
 
-def test_invalid_provider_output_never_uses_degraded_fallback(tmp_path, monkeypatch):
+def test_invalid_provider_output_uses_safe_degraded_fallback_when_enabled(tmp_path, monkeypatch):
     monkeypatch.setenv("PARSER_MODE", "llm")
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
     monkeypatch.setenv("LLM_MODEL", "openrouter/free")
@@ -222,8 +222,33 @@ def test_invalid_provider_output_never_uses_degraded_fallback(tmp_path, monkeypa
     response = TestClient(create_app(str(fixture_db(tmp_path)))).post(
         "/api/v1/search", json={"query": "Show SUVs"}
     )
-    assert response.status_code == 502
-    assert response.json()["error"]["code"] == "llm_invalid_response"
+    body = response.json()
+    assert response.status_code == 200 and body["status"] == "ok"
+    assert body["meta"]["degraded"] is True
+    assert "llm_invalid_response" in body["meta"]["warnings"][1]
+
+
+def test_semantically_wrong_provider_intent_is_replaced_by_guarded_fallback(tmp_path, monkeypatch):
+    from vehicle_search.domain import Intent
+
+    monkeypatch.setenv("PARSER_MODE", "llm")
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    monkeypatch.setenv("LLM_MODEL", "openrouter/free")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    monkeypatch.setenv("ALLOW_OFFLINE_FALLBACK", "true")
+
+    class WrongParser:
+        def parse(self, query):
+            return Intent(intent="clarify", issues=[{"code": "ambiguous", "evidence": "SUVs"}])
+
+    monkeypatch.setattr("vehicle_search.api.build_parser", lambda *args, **kwargs: WrongParser())
+    response = TestClient(create_app(str(fixture_db(tmp_path)))).post(
+        "/api/v1/search", json={"query": "Show SUVs"}
+    )
+    body = response.json()
+    assert response.status_code == 200 and body["status"] == "ok"
+    assert body["interpretation"]["predicates"][0]["values"] == ["suv"]
+    assert body["meta"]["degraded"] is True
 
 
 def test_transient_provider_failure_uses_explicit_degraded_fallback(tmp_path, monkeypatch):
@@ -248,7 +273,7 @@ def test_transient_provider_failure_uses_explicit_degraded_fallback(tmp_path, mo
     assert body["meta"]["degraded"] is True and body["meta"]["parser_mode"] == "offline"
 
 
-def test_transient_fallback_does_not_partially_answer_unsupported_query(tmp_path, monkeypatch):
+def test_transient_fallback_returns_safe_clarification_for_ambiguous_query(tmp_path, monkeypatch):
     monkeypatch.setenv("PARSER_MODE", "llm")
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
     monkeypatch.setenv("LLM_MODEL", "openrouter/free")
@@ -265,8 +290,10 @@ def test_transient_fallback_does_not_partially_answer_unsupported_query(tmp_path
     response = TestClient(create_app(str(fixture_db(tmp_path)))).post(
         "/api/v1/search", json={"query": "Low mileage cars"}
     )
-    assert response.status_code == 503
-    assert response.json()["error"]["code"] == "llm_unavailable"
+    body = response.json()
+    assert response.status_code == 200
+    assert body["status"] == "needs_clarification" and body["results"] == []
+    assert body["meta"]["degraded"] is True
 
 
 def test_unknown_issue_codes_are_normalized(tmp_path, monkeypatch):

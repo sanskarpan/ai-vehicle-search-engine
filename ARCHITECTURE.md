@@ -96,6 +96,8 @@ The canonical internal predicate has `{field, op, values, source, evidence}`. Nu
 7. Map issues and material unsupported criteria to safe clarification templates. Numeric claims not deterministically verifiable require clarification. Do not invent numeric thresholds from adjectives.
 8. Expand policy terms, normalize and deduplicate equivalent atoms, assign effective sort and generate assumption text in code. Evidence for policy predicates cites the policy phrase.
 
+For phrases the conservative grammar understands deterministically, its complete predicate, preference and sort set is a semantic guard on provider output. A provider may not omit or add constraints, add a clarification, or change ordering semantics for those phrases. With explicit fallback enabled, availability failures and validation disagreements use the conservative result and disclose degradation. Unsupported or ambiguous fallback input returns clarification without executing partial filters.
+
 The scanner cannot prove that every possible English constraint was preserved. The extraction prompt must identify unsupported requirements, and held-out/adversarial evaluation measures remaining semantic errors. Never describe schema-constrained parsing as a complete prompt-injection defense.
 
 ### Hosted adapters

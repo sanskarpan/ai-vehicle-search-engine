@@ -51,7 +51,7 @@ Exit evidence: fixture-driven POST search, listing detail and exact counts pass;
 - [x] Add structured-output provider adapters for OpenRouter (with configurable free-model fallback chain) and direct Gemini.
 - [x] Verify provider HTTP schema support, original-schema validation and provider termination checks in adapter code.
 - [x] Apply bounded provider deadline and output; OpenRouter/Gemini direct HTTP clients do not retry.
-- [x] Add failure mapping; optional timeout/availability fallback is off by default and clearly labelled when enabled; invalid output never falls back.
+- [x] Add failure mapping; optional provider-failure fallback is off by default, clearly labelled when enabled and constrained by deterministic semantic validation.
 - [x] Add mock transport tests for refusal, truncation, invalid JSON, 401, 429, 5xx and timeout.
 
 Exit evidence: offline path and SDK contract tests pass; real adapter exists and is reachable from LLM mode. If no key is available, mark live checks pending and continue all independent work.
@@ -101,7 +101,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 93 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 95 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
 | Live AI evaluation | Partial; full corpus gate pending | On 2026-09-11 the public API served assignment examples 2 and 3 through OpenRouter with valid hard filters; example 1 used labelled transient fallback. Gemini accepted the translated schema but returned quota/unavailability. The 60-query live quality gate remains pending provider capacity |

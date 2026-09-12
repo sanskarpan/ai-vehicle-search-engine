@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .llm import build_parser
-from .parsing import ParserError, offline_parse
+from .parsing import ParserError, offline_parse, require_supported_coverage
 from .service import execute
 from .storage import connect, get, validate_catalogue
 
@@ -293,6 +293,7 @@ def create_app(db_path: str | None = None) -> FastAPI:
         started = time.perf_counter()
         parse_started = time.perf_counter()
         degraded = False
+        fallback_reason: str | None = None
         try:
             if configuration_error:
                 raise ParserError("llm_configuration_error", configuration_error)
@@ -300,14 +301,16 @@ def create_app(db_path: str | None = None) -> FastAPI:
                 if parser is None:
                     raise ParserError("llm_configuration_error", "LLM parser is not configured")
                 try:
-                    intent = parser.parse(body.query)
+                    intent = require_supported_coverage(parser.parse(body.query), body.query)
                 except ParserError as original_error:
-                    if allow_fallback and original_error.code in {"llm_timeout", "llm_unavailable"}:
-                        fallback_intent = offline_parse(body.query)
-                        if fallback_intent.issues or fallback_intent.intent != "search":
-                            raise
-                        intent = fallback_intent
+                    if allow_fallback and original_error.code in {
+                        "llm_timeout",
+                        "llm_unavailable",
+                        "llm_invalid_response",
+                    }:
+                        intent = offline_parse(body.query)
                         degraded = True
+                        fallback_reason = original_error.code
                     else:
                         raise
             else:
@@ -334,7 +337,12 @@ def create_app(db_path: str | None = None) -> FastAPI:
                         },
                         "warnings": ["Synthetic catalogue; safety ratings are demonstration data."]
                         + (
-                            ["Offline fallback used after a transient provider failure."]
+                            [
+                                (
+                                    "Conservative offline interpretation used because the provider "
+                                    f"failed validation or availability ({fallback_reason})."
+                                )
+                            ]
                             if degraded
                             else []
                         ),
