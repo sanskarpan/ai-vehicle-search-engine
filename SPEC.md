@@ -42,7 +42,7 @@ Title: “Problem 2 - AI Vehicle Search Engine”. Build a backend service where
 | R4 | Family and safety example | Explicit documented family and safety policies; E03 |
 | R5 | Realistic generated data and script | Deterministic curated seed generation and validation |
 | R6 | Permitted language and any LLM provider | Python service; configurable hosted LLM |
-| R7 | Code, README/API docs, DESIGN in public forkable repo | Final submission checks; publication is a later owner action |
+| R7 | Code, README/API docs, DESIGN in public forkable repo | Public repository metadata, clean-clone verification and M6 evidence |
 | R8 | Optional short video | Optional walkthrough outline only |
 
 ## 2. Scope and defaults
@@ -226,4 +226,4 @@ Pass the golden functional cases and adversarial tests in [EVALUATION.md](EVALUA
 
 Performance targets, pending measurement: local deterministic search p95 <= 200 ms over 10,000 listings at concurrency 5; live end-to-end p95 <= 8 seconds over at least 30 measured requests after warmup, with the 10-second deadline still enforced. Record hardware, concurrency, sample count and errors. Missing credentials or a missed latency target must be explicitly reported; do not change semantics to improve a score.
 
-Final deliverables: code, pinned dependencies, seed command, tests/evaluation runner, `.env.example`, `.gitignore`, Dockerfile, README with verified clean-start/API instructions, updated `DESIGN.md`, and completed checklist with evidence. Public GitHub publication and optional video remain separate submission steps, not actions implied by this planning handoff.
+Final deliverables: code, pinned dependencies, seed command, tests/evaluation runner, `.env.example`, `.gitignore`, Dockerfile, README with verified clean-start/API instructions, updated `DESIGN.md`, and completed checklist with evidence. The repository is publicly available and independently cloneable; the optional video remains a separate submission step.

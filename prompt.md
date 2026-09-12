@@ -43,7 +43,7 @@ Default stack: Python 3.12+, FastAPI, Pydantic v2, standard sqlite3, pytest/HTTP
 6. Run deterministic acceptance and opt-in live evaluation, then measure performance.
 7. Package local/Docker setup, verify clean-start README commands and update all affected documents.
 
-Use the checklist as the execution ledger. After each phase, record changed modules, commands run, results and next step. Continue through all independently executable phases; do not stop after scaffolding, proposing a plan or getting one example to work. Do not expand into UI, embeddings, search infrastructure, chat memory or authentication before MVP gates are met. No deployment or public GitHub publication is part of this local build instruction.
+Use the checklist as the execution ledger. After each phase, record changed modules, commands run, results and next step. Continue through all independently executable phases; do not stop after scaffolding, proposing a plan or getting one example to work. Do not expand into UI, embeddings, search infrastructure, chat memory or authentication before MVP gates are met. Treat deployment and public GitHub publication as separate actions that require explicit task authorization; preserve and validate existing deployment configuration when working in the published repository.
 
 The architecture gives suggested code paths and interfaces. You may simplify internal details when behavior and tests remain intact; document substantial changes in DESIGN and synchronize SPEC/architecture/evaluation. Do not quietly change thresholds, response contracts, fixed anchors or expected outcomes to accommodate defective code.
 

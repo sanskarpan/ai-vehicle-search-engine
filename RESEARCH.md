@@ -22,7 +22,7 @@ The second image specifies a backend catalogue search service and three examples
 
 The first two examples can fail despite visually convincing results: a vehicle priced exactly at the excluded limit, or a petrol manual with a semantically similar description, would not satisfy the request. The third can fail through undocumented assumptions or fabricated real-world ratings. These are the principal quality risks addressed by the proposed design.
 
-Neither image requires frontend development, live scraping, a particular cloud, a vector database, authentication, conversational state or a deployment URL. Those can be useful elsewhere but should not be inferred as assignment requirements. The images also do not authorize external publication during this planning task. Full source transcription and requirement IDs appear in [SPEC.md](SPEC.md).
+Neither image requires frontend development, live scraping, a particular cloud, a vector database, authentication, conversational state or a deployment URL. Those can be useful elsewhere but should not be inferred as assignment requirements. Publication and deployment were authorized by later user instructions and are recorded separately from the original image requirements. Full source transcription and requirement IDs appear in [SPEC.md](SPEC.md).
 
 ## 2. What the technical sources establish
 

@@ -66,9 +66,9 @@ The README should support fresh install, deterministic seed, API startup and the
 
 ## Known scope limits
 
-English only; INR only; synthetic catalogue; single-turn search; limited supported attributes and subjective vocabulary; no cross-field Boolean OR; no real safety certification; no guarantees about actual affordability or suitability. Local review is the intended runtime. A public production API would require additional operational and access-control design.
+English only; INR only; synthetic catalogue; single-turn search; limited supported attributes and subjective vocabulary; no cross-field Boolean OR; no real safety certification; no guarantees about actual affordability or suitability. Local review is the reproducible baseline. The public Render service is a review deployment; broader production use would require persistent managed data, monitoring, access control and cost controls.
 
-The assignment requires a public GitHub repository with code, README/API documentation and this DESIGN file, plus a seed script. A walkthrough video is optional. Publishing the eventual repository is a separate submission action.
+The assignment requires a public GitHub repository with code, README/API documentation and this DESIGN file, plus a seed script. Those deliverables are present in the published repository and verified from an unauthenticated clean clone. A walkthrough video is optional.
 
 ## Evidence
 
