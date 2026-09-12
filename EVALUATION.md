@@ -118,7 +118,7 @@ Security tests must assert restricted capabilities and preserved constraints, no
 
 ## 5. Metrics and release gates
 
-The evaluator writes a safe JSON summary and an optional Markdown report containing dataset version/hash, git revision if present, parser mode, provider/model ID when live, prompt/schema version, run date, configuration, counts and metrics. Raw query/response samples are opt-in and must contain no secrets or personal data.
+The evaluator writes a safe JSON summary containing dataset version/hash, git revision if present, requested parser mode, provider/model ID when live, prompt/schema version, counts and metrics. A run requested with `PARSER_MODE=llm` counts a case as passing only when the response reports `parser_mode: llm` and `degraded: false`; it reports live-extraction and degraded-response counts separately. Raw query/response samples must contain no secrets or personal data.
 
 Metrics:
 

@@ -58,7 +58,7 @@ Exit evidence: offline path and SDK contract tests pass; real adapter exists and
 
 ## M4 — Evaluation and hardening
 
-- [x] Implement labelled 36-case suite and 24 held-out paraphrases.
+- [x] Implement labelled 36-case suite and 24 held-out paraphrases; require actual non-degraded LLM execution when evaluating in live mode.
 - [x] Independently verify every result against labelled predicates and fixed anchor expectations (anchor tests plus 10,000-row contract sweep).
 - [x] Test prompt injection attempts, malicious descriptions, SQL injection strings and semantic omissions.
 - [x] Verify key/query redaction, error envelopes and no API writes (request IDs only, read-only search/detail connections, injection row-count check).
@@ -101,14 +101,14 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 |---|---|---|
 | Planning handoff | Prepared | Seven Markdown files |
 | Data and pure domain | Complete | 300-row seed smoke test and anchors |
-| Deterministic API | Complete | 100 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
+| Deterministic API | Complete | 101 unit/integration parameter cases pass; 36/36 golden canonical and exact-result checks |
 | Offline grammar | Complete | 24/24 held-out canonical and exact-result checks; unsupported residual requirements clarify |
 | Real provider adapter | Implemented | OpenRouter `openrouter/free` plus configurable fallback models and direct Gemini; malformed shapes, termination, HTTP and timeout paths are mocked and tested |
 | Live AI evaluation | Partial; provider-quality gate pending | A 2026-09-12 pre-fix production run exposed 12/60 provider availability/semantic failures. After the guarded-fallback fix, the identical public corpus passed 60/60 decisions, 45/45 canonical cases, 60/60 request IDs and zero hard-filter violations; the final deployed-head rerun produced the same 60/60 canonical/status result with zero hard-filter violations. OpenRouter free capacity caused all 60 to disclose offline fallback. Gemini's model catalogue listed `gemini-3.8-flash`, but live structured requests returned HTTP 429 quota exhaustion. This is production reliability evidence rather than a live-model quality pass. |
 | Frontend browser E2E | Complete | Public browser verified accurate initial/fallback badges, catalogue version, result and clarification states, search, interpretation, sorting, six-page pagination, keyboard detail, raw JSON, reset, 390 px responsive layout and zero console warnings/errors |
 | Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serves latest `main`; health, OpenAPI/Swagger, full 60-query corpus, validation, malformed/oversized requests, 404, injection, security headers, ordering, complete 300-row pagination, detail consistency, hard-filter oracle and request-ID checks pass |
 | Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 100 full API searches at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms, zero errors |
-| Clean-start packaging | Complete | Final public source cloned over unauthenticated HTTPS with provider/deployment credentials unset; exact locks installed without build isolation; seed, lint, 100 tests, 36 golden and 24 held-out cases, frontend/docs/OpenAPI, three assignment searches, detail and error paths passed. Image `b000d0733d5b` independently served readiness/frontend/OpenAPI/search as nonroot `appuser`; equivalent runtime smoke is enforced in CI |
+| Clean-start packaging | Complete | Final public source cloned over unauthenticated HTTPS with provider/deployment credentials unset; exact locks installed without build isolation; seed, lint, 101 tests, 36 golden and 24 held-out cases, frontend/docs/OpenAPI, three assignment searches, detail and error paths passed. Image `b000d0733d5b` independently served readiness/frontend/OpenAPI/search as nonroot `appuser`; equivalent runtime smoke is enforced in CI |
 | End-to-end backend sweep | Complete | 10,000-row local gates plus public 300-row catalogue: 60/60 labelled decisions, 45/45 canonical cases, 300 unique records across six pages, all explicit sorts, detail equality, health/OpenAPI/errors and zero hard-filter violations |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
 | Public submission | Ready | Public `main` repository is accessible and CI passes; optional walkthrough video remains owner work |

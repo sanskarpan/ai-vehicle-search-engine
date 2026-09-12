@@ -70,16 +70,25 @@ def run(path: str, dataset: str) -> dict[str, Any]:
     dataset_path = Path(dataset)
     rows = [json.loads(line) for line in dataset_path.read_text().splitlines() if line.strip()]
     client = TestClient(create_app(path))
+    requested_mode = os.getenv("PARSER_MODE", "offline").strip().lower()
     case_results = []
     status_correct = canonical_exact = result_set_exact = clarification_correct = 0
     canonical_count = result_set_count = clarification_count = 0
     returned_rows = hard_violations = 0
+    live_extractions = degraded_responses = 0
 
     for row in rows:
         response = client.post("/api/v1/search", json={"query": row["query"], "limit": 50})
         body = response.json()
         status_ok = response.status_code == 200 and body.get("status") == row["expected_status"]
         checks = {"status": status_ok}
+        meta = body.get("meta") if isinstance(body, dict) else None
+        meta = meta if isinstance(meta, dict) else {}
+        is_live_extraction = meta.get("parser_mode") == "llm" and meta.get("degraded") is False
+        live_extractions += is_live_extraction
+        degraded_responses += meta.get("degraded") is True
+        if requested_mode == "llm":
+            checks["live_execution"] = is_live_extraction
         if row["expected_status"] == "needs_clarification":
             clarification_count += 1
             clarification_ok = (
@@ -138,7 +147,11 @@ def run(path: str, dataset: str) -> dict[str, Any]:
         "dataset": str(dataset_path),
         "dataset_sha256": hashlib.sha256(dataset_path.read_bytes()).hexdigest(),
         "git_revision": _revision(),
-        "parser_mode": os.getenv("PARSER_MODE", "offline"),
+        "parser_mode": requested_mode,
+        "provider": os.getenv("LLM_PROVIDER") if requested_mode == "llm" else None,
+        "model": os.getenv("LLM_MODEL") if requested_mode == "llm" else None,
+        "live_extractions": live_extractions,
+        "degraded_responses": degraded_responses,
         "prompt_sha256": hashlib.sha256(prompt_path.read_bytes()).hexdigest(),
         "count": len(rows),
         "passed": passed,
