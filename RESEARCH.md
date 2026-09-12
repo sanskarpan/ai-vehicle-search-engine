@@ -85,7 +85,7 @@ The architecture deliberately favors a short end-to-end path that a reviewer can
 
 | Uncertainty | Current position | Resolution during build |
 |---|---|---|
-| Runtime credentials/model entitlement | Not supplied or inspected | Configure one actual provider/model; run explicit live checks |
+| Runtime credentials/model entitlement | Credentials were supplied and inspected privately after planning; no key is committed. OpenRouter free capacity fell back safely, while Gemini listed `gemini-3.8-flash` but returned HTTP 429 for live generation. | Retain disclosed fallback; rerun the separate live-quality gate when provider quota is available. |
 | Model accuracy on India-specific units and phrases | Unknown | Golden cases plus held-out paraphrases; zero hard-constraint violations |
 | Target latency and cost | Not measured | Record latency distributions and tokens; calculate money only from verified current pricing if needed |
 | Preferred domain interpretation | Assignment leaves terms open | Adopt visible policies in SPEC; change only consistently with tests |

@@ -49,7 +49,7 @@ Title: “Problem 2 - AI Vehicle Search Engine”. Build a backend service where
 
 **MVP:** English natural-language search for Indian passenger-car listings, integer INR asking prices and odometer kilometres, synthetic new/used listings, structured filters, limited subjective intent, deterministic ranking, explanations, pagination, detail endpoint, seed tooling, offline tests, and a real hosted LLM adapter.
 
-Python 3.12+, FastAPI, Pydantic v2 and SQLite are the default stack. Use a locked, tested dependency set rather than treating these compatibility floors as exact version pins. Use OpenRouter’s `openrouter/free` router as the default runtime route and support direct Gemini via `gemini-3.8-flash`; both implement the same structured extraction interface. A specific OpenRouter free slug may be selected after checking its Models API. The coding model used by the builder is independent of the application's runtime LLM. No preferred runtime model, account access, latency, or cost has been benchmarked.
+Python 3.12+, FastAPI, Pydantic v2 and SQLite are the default stack. Use a locked, tested dependency set rather than treating these compatibility floors as exact version pins. Use OpenRouter’s `openrouter/free` router as the default runtime route and support direct Gemini via `gemini-3.8-flash`; both implement the same structured extraction interface. A specific OpenRouter free slug may be selected after checking its Models API. The coding model used by the builder is independent of the application's runtime LLM. Current account/model availability and observed live limitations are recorded in [CHECKLIST.md](CHECKLIST.md); no price claim is made.
 
 Assumptions adopted to avoid blocking the build:
 
