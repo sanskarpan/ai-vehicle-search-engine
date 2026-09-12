@@ -3,7 +3,8 @@ WORKDIR /app
 COPY pyproject.toml README.md .env.example requirements.runtime.lock ./
 COPY src ./src
 COPY frontend ./frontend
-RUN pip install --no-cache-dir -r requirements.runtime.lock && pip install --no-cache-dir --no-deps .
+RUN pip install --no-cache-dir -r requirements.runtime.lock \
+    && pip install --no-cache-dir --no-build-isolation --no-deps .
 RUN useradd --create-home appuser
 RUN mkdir -p /app/data && chown -R appuser:appuser /app
 USER appuser

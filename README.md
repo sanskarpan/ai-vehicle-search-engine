@@ -8,7 +8,7 @@ FastAPI backend for searching a synthetic Indian vehicle catalogue with natural-
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --requirement requirements.lock
-python -m pip install --no-deps --editable .
+python -m pip install --no-build-isolation --no-deps --editable .
 python -m vehicle_search.seed --count 300 --seed 42
 uvicorn vehicle_search.api:app --app-dir src --reload
 ```
@@ -53,7 +53,7 @@ python -m vehicle_search.evaluate --dataset data/heldout_queries.jsonl
 
 The deterministic evaluator checks status, canonical predicates/preferences/sort, exact anchor result sets and an independent hard-predicate oracle. Live model evaluation is opt-in and requires credentials. Run the seed command with `--reset` only when intentionally replacing the local demo database. Use `--count 300 --seed 42` for the documented dataset.
 
-Build the production container with `docker build -t ai-vehicle-search .` and run it with `docker run --rm -p 8000:8000 ai-vehicle-search`. The image installs `requirements.runtime.lock`, seeds at startup, runs as a nonroot user and exposes a readiness health check.
+Build the production container with `docker build -t ai-vehicle-search .` and run it with `docker run --rm -p 8000:8000 ai-vehicle-search`. The image installs the pinned runtime and build toolchain from `requirements.runtime.lock`, seeds at startup, runs as a nonroot user and exposes a readiness health check.
 
 To enable a hosted parser, copy `.env.example` to `.env`, add your provider key, set `PARSER_MODE=llm`, and restart Uvicorn with `--env-file .env`. The checked-in quickstart intentionally stays offline so a clean clone works without credentials.
 

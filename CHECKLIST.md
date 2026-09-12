@@ -73,7 +73,7 @@ Exit evidence: deterministic gates green, zero measured hard-filter violations; 
 
 ## M5 — Reproducible packaging and docs
 
-- [x] Add Dockerfile with nonroot runtime, frontend assets and documented seed-before-start flow (local daemon build pending).
+- [x] Add Dockerfile with nonroot runtime, frontend assets and documented seed-before-start flow; pin the build backend and verify installation without build isolation.
 - [x] Write README with verified local setup, configuration guidance, API curl examples and error examples.
 - [x] Verify zero-key quickstart path; clearly label its restricted offline grammar.
 - [x] Document OpenRouter/Gemini setup, request data sent to provider, token/timeout settings and pending live checks.
@@ -91,7 +91,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 - [x] Verify code, seed script, README/API documentation and DESIGN are present as required by Image 1.
 - [x] Scan tracked files/diffs for credentials, personal paths, huge binaries and generated state.
 - [x] Summarize implementation, commands/results, pending live checks, known limits and current commits in this ledger.
-- [x] Prepare repository for a public forkable GitHub submission with ignored secrets/generated state and reproducible CI/container configuration.
+- [x] Prepare repository for a public forkable GitHub submission with ignored secrets/generated state and reproducible CI/container configuration; CI boots the image and checks readiness, nonroot execution, frontend, OpenAPI and search.
 - [x] Verify the public repository is accessible/forkable and record `https://github.com/sanskarpan/ai-vehicle-search-engine`.
 - [ ] Optional: record a 3–5 minute walkthrough; this is not a release blocker.
 
@@ -108,7 +108,7 @@ Exit evidence: clean checkout can seed, start and demonstrate all three examples
 | Frontend browser E2E | Complete | Public browser verified accurate initial/fallback badges, catalogue version, result and clarification states, search, interpretation, sorting, six-page pagination, keyboard detail, raw JSON, reset, 390 px responsive layout and zero console warnings/errors |
 | Render deployment | Live | `https://ai-vehicle-search-engine-0a7f.onrender.com` serves latest `main`; health, OpenAPI/Swagger, full 60-query corpus, validation, malformed/oversized requests, 404, injection, security headers, ordering, complete 300-row pagination, detail consistency, hard-filter oracle and request-ID checks pass |
 | Performance | Pass | Python 3.12.10 / Darwin arm64, 10,000 rows, 100 full API searches at concurrency 5: p50 55.09 ms, p95 91.34 ms, max 106.51 ms, zero errors |
-| Clean-start packaging | Complete | Exact locks install cleanly; image `18e08f8a7239` built locally, seeded 300 rows, served readiness/search as `appuser` |
+| Clean-start packaging | Complete | Exact runtime/build locks install without hidden build isolation; image `b000d0733d5b` built locally, seeded 300 rows, served readiness/frontend/OpenAPI/search as nonroot `appuser`; equivalent runtime smoke is enforced in CI |
 | End-to-end backend sweep | Complete | 10,000-row local gates plus public 300-row catalogue: 60/60 labelled decisions, 45/45 canonical cases, 300 unique records across six pages, all explicit sorts, detail equality, health/OpenAPI/errors and zero hard-filter violations |
 | Frontend icon policy | Complete | Removed symbol glyphs from interactive/empty/rating controls; inline SVG icons are covered by a regression assertion |
 | Public submission | Ready | Public `main` repository is accessible and CI passes; optional walkthrough video remains owner work |

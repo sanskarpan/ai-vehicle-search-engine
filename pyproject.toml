@@ -18,7 +18,7 @@ dev = ["httpx2>=2.12,<3", "pytest>=8.0,<9", "ruff>=0.6,<1"]
 vehicle-seed = "vehicle_search.seed:main"
 
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools==80.9.0", "wheel==0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
